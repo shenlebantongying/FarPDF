@@ -1,5 +1,4 @@
 #include "graphicsview.h"
-#include <graphicspageitem.h>
 #include <QGraphicsPixmapItem>
 #include <QMouseEvent>
 #include <QScrollBar>
@@ -16,26 +15,31 @@ GraphicsView::GraphicsView(Doc & doc_)
 
     scene->setBackgroundBrush(Qt::lightGray);
 
+    addPage(0);
     connect(this->verticalScrollBar(),&QScrollBar::valueChanged,
             [=,this]{this->make_sure_pages();});
 }
 
 void GraphicsView::addPage(int n){
-
-    // Guard to avoid add duplicated page
-    // Note: this can maybe optimized
-
-    // there are a page already in rendered pages_nums
-
-    if(std::find(rendered_pages_nums.begin(),rendered_pages_nums.end(),n) != rendered_pages_nums.end()){
-        return; // just do nothing
-    } else {
-        rendered_pages_nums.push_back(n);
-
-        auto t_pageItem = new GraphicsPageItem(m_doc.get_QPixmap_from_page_number(n), n, nullptr);
-        t_pageItem->setOffset(0, m_doc.page_acc_h[n]);
-        scene->addItem(t_pageItem);
+    if (live_pages.size() > 10) {
+        auto to_be_del = live_pages.dequeue();
+        scene->removeItem(to_be_del);
+        qDebug()<<to_be_del->page_num<<"removed";
+        delete to_be_del;
     }
+
+    // Guard to avoid duplicated page rendering
+    for (auto i:live_pages) {
+        if (i->page_num == n){
+            return;
+        }
+    }
+
+    auto t_pageItem = new GraphicsPageItem(m_doc.get_QPixmap_from_page_number(n), n, nullptr);
+    t_pageItem->setOffset(0, m_doc.page_acc_h[n]);
+    scene->addItem(t_pageItem);
+    live_pages.enqueue(t_pageItem);
+    qDebug()<<t_pageItem->page_num<<"added";
 }
 
 QList<QGraphicsItem*> GraphicsView::get_visible_page_items(){
@@ -43,8 +47,8 @@ QList<QGraphicsItem*> GraphicsView::get_visible_page_items(){
 }
 
 void GraphicsView::mousePressEvent(QMouseEvent *event) {
-    make_sure_pages();
-    qDebug()<<get_visible_page_items();
+    //make_sure_pages();
+    //qDebug()<<get_visible_page_items();
 }
 
 std::vector<int> GraphicsView::demanded_page_numbers() {
@@ -79,31 +83,14 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
         page_n_high = 0;
     }
 
-    qDebug()<< page_n_low <<page_n_high;
-
     std::vector<int> v(page_n_high-page_n_low);
     std::iota (std::begin(v), std::end(v), page_n_low);;
     return v;
 }
 
-void GraphicsView::delete_pages(std::vector<int> pages) const{
-    for (auto item:scene->items()) {
-        if (item->type() == GraphicsPageItem::Type){
-            auto y=dynamic_cast<GraphicsPageItem*>(item);
-            if(std::find(pages.begin(), pages.end(), y->page_num) != pages.end()) {
-                scene->removeItem(item);
-                delete item;
-
-            }
-        }
-    }
-}
 
 void GraphicsView::make_sure_pages(){
-    auto demanded = demanded_page_numbers();
-
     for(auto x : demanded_page_numbers()){
         addPage(x);
     }
-
 }
