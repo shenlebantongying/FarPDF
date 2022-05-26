@@ -5,7 +5,7 @@
 #include <QQueue>
 
 #include "graphicspageitem.h"
-#include "Doc.h"
+#include "document.h"
 
 class GraphicsView : public QGraphicsView
 {
@@ -13,11 +13,11 @@ class GraphicsView : public QGraphicsView
 
 
 public:
-    explicit GraphicsView(Doc &doc);
+    explicit GraphicsView(document &doc);
     QGraphicsScene * scene;
 
 private:
-    Doc & m_doc;
+    document & m_doc;
 
     void addPage(int n);
 

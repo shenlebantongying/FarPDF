@@ -9,14 +9,16 @@
 // Note: mupdf uses reference counting for memory management.
 // To avoid problems, all fz_ related code should belong here.
 
-class Doc
+class document
 {
 public:
-    explicit Doc(const std::string &path);
+    explicit document(const std::string &path);
 
     QPixmap get_QPixmap_from_page_number(int n);
 
     fz_document * m_doc;
+
+    fz_outline * get_outline();
 
     // Note: without render, this consumes very little memory
     std::vector<fz_page*> pages;

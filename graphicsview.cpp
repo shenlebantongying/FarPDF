@@ -3,7 +3,7 @@
 #include <QMouseEvent>
 #include <QScrollBar>
 
-GraphicsView::GraphicsView(Doc & doc_)
+GraphicsView::GraphicsView(document & doc_)
     :m_doc(doc_)
 {
     scene = new QGraphicsScene();
@@ -11,7 +11,6 @@ GraphicsView::GraphicsView(Doc & doc_)
     scene->setSceneRect(0,0,m_doc.max_page_width,m_doc.page_acc_h.back());
 
     // The middle point of 1st page's boundary is (0,0)
-    setAlignment(Qt::AlignTop);
 
     scene->setBackgroundBrush(Qt::lightGray);
 
@@ -24,7 +23,6 @@ void GraphicsView::addPage(int n){
     if (live_pages.size() > 10) {
         auto to_be_del = live_pages.dequeue();
         scene->removeItem(to_be_del);
-        qDebug()<<to_be_del->page_num<<"removed";
         delete to_be_del;
     }
 
@@ -39,7 +37,6 @@ void GraphicsView::addPage(int n){
     t_pageItem->setOffset(0, m_doc.page_acc_h[n]);
     scene->addItem(t_pageItem);
     live_pages.enqueue(t_pageItem);
-    qDebug()<<t_pageItem->page_num<<"added";
 }
 
 QList<QGraphicsItem*> GraphicsView::get_visible_page_items(){

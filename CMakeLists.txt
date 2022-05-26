@@ -18,9 +18,11 @@ find_package(MuPDF REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
-        Doc.h Doc.cpp
+        farmainwindow.h farmainwindow.cpp
+        document.h document.cpp
         graphicspageitem.h graphicspageitem.cpp
         graphicsview.h graphicsview.cpp
+        toctreemodel.h toctreemodel.cpp
         )
 
 qt_add_executable(FarPDF

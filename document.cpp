@@ -1,7 +1,7 @@
-#include "Doc.h"
+#include "document.h"
 #include <QDebug>
 #include <iostream>
-Doc::Doc(const std::string &path) {
+document::document(const std::string &path) {
     ctx = fz_new_context(nullptr, nullptr,FZ_STORE_DEFAULT);
     ctm = fz_scale(1,1);
 
@@ -29,10 +29,11 @@ Doc::Doc(const std::string &path) {
         }
 
     }
+    max_page_width += 50;
 
 }
 
-QPixmap Doc::get_QPixmap_from_page_number(int n){
+QPixmap document::get_QPixmap_from_page_number(int n){
     fz_pixmap *pix = fz_new_pixmap_from_page(ctx,pages[n],ctm, fz_device_rgb(ctx),0);
 
     // Without new, the QImg will be auto destroyed when goes out of scope
@@ -44,6 +45,10 @@ QPixmap Doc::get_QPixmap_from_page_number(int n){
     fz_drop_pixmap(ctx,pix);
 
     return pixmap;
+}
+
+fz_outline * document::get_outline() {
+    return fz_load_outline(ctx,m_doc);;
 }
 
 
