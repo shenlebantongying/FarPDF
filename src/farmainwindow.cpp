@@ -7,6 +7,8 @@ farMainWindow::farMainWindow(QWidget * parent) {
     // init code should not related to specific doc,
     // set it to null to make sure the program will crash;
     m_doc = nullptr;
+    
+    resize(1024, 800);
 
     view = new GraphicsView();
     setCentralWidget(view);
@@ -64,11 +66,15 @@ void farMainWindow::jump_to_page(int n) {
 
 void farMainWindow::load_document() {
     delete m_doc;
-    m_doc = new document(QFileDialog::getOpenFileName(this,
-                                                      "Open File",
-                                                      QDir::homePath(),
-                                                      "Documents (*.pdf)")
-                                 .toStdString());
+    QString file_name = QFileDialog::getOpenFileName(this,
+                                                     "Open File",
+                                                     QDir::homePath(),
+                                                     "Documents (*.pdf)");
+    if (file_name.isEmpty() or file_name.isNull()) {
+        return;
+    }
+
+    m_doc = new document(file_name.toStdString());
 
     view->update_doc(m_doc);
 
