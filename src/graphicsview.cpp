@@ -113,3 +113,7 @@ int GraphicsView::get_middle_page_num() {
         return 0;
     }
 }
+
+void GraphicsView::zoom_to(float factor) {
+    setTransform(QTransform().scale(factor, factor));
+}

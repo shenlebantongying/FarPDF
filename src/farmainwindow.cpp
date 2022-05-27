@@ -1,17 +1,19 @@
+#include "farmainwindow.h"
+#include <QComboBox>
 #include <QFileDialog>
 #include <QLabel>
 
-#include "farmainwindow.h"
-
 farMainWindow::farMainWindow(QWidget * parent) {
-    // init code should not related to specific doc,
-    // set it to null to make sure the program will crash;
+    // init code should not be related to specific doc,
+    // set it to null to make sure the program will crash if some wrong code ever added;
     m_doc = nullptr;
-    
+
     resize(1024, 800);
 
     view = new GraphicsView();
     setCentralWidget(view);
+
+    //-- Table of contents -----------------------------------------------------------
 
     toc_dock = new QDockWidget("Table of Contents", this);
     tocView = new QTreeView();
@@ -29,7 +31,7 @@ farMainWindow::farMainWindow(QWidget * parent) {
     toc_dock->setWidget(tocView);
     toc_dock->hide();
 
-    // Main Toolbar
+    //-- Main Toolbar -----------------------------------------------------------------
 
     toolbar = new QToolBar();
     toolbar->setMovable(false);
@@ -37,7 +39,7 @@ farMainWindow::farMainWindow(QWidget * parent) {
     toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
     this->addToolBar(toolbar);
 
-
+    // Open button
     const QIcon openIcon = QIcon::fromTheme("document-open");
     auto * openAct = new QAction(openIcon, tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
@@ -49,14 +51,31 @@ farMainWindow::farMainWindow(QWidget * parent) {
 
     toolbar->addAction(openAct);
 
-
+    // Page Indicator
     auto page_indicator = new QLabel("0", this);
     toolbar->addSeparator();
     toolbar->addWidget(page_indicator);
+    page_indicator->setMinimumWidth(20);
+    page_indicator->setAlignment(Qt::AlignCenter);
 
     connect(view, &GraphicsView::page_updated,
             [=, this] {
                 page_indicator->setNum(view->get_middle_page_num());
+            });
+
+    // Zoom switcher
+    auto zoom_switcher = new QComboBox(this);
+    zoom_switcher->addItem(" 50%", 0.5);
+    zoom_switcher->addItem("100%", 1.0);
+    zoom_switcher->addItem("150%", 1.5);
+    zoom_switcher->addItem("200%", 2.0);
+    zoom_switcher->setCurrentText("100%");
+
+    toolbar->addWidget(zoom_switcher);
+
+    connect(zoom_switcher, &QComboBox::currentIndexChanged,
+            [=, this] {
+                view->zoom_to(zoom_switcher->currentData().toFloat());
             });
 }
 

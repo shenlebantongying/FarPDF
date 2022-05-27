@@ -16,6 +16,7 @@ public:
     void update_doc(document * doc_);
 
     int get_middle_page_num();
+    void zoom_to(float factor);
 
 signals:
     void page_updated();
