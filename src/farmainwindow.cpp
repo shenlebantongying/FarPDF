@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include <QLabel>
 
 #include "farmainwindow.h"
 
@@ -30,18 +31,32 @@ farMainWindow::farMainWindow(QWidget * parent) {
 
     // Main Toolbar
 
-    const QIcon openIcon = QIcon::fromTheme("document-open");
-    auto * openAct = new QAction(openIcon, tr("&Open..."), this);
-    openAct->setShortcuts(QKeySequence::Open);
-    openAct->setStatusTip(tr("Open an existing file"));
-    connect(openAct, &QAction::triggered, [=, this] {
-        load_document();
-    });
     toolbar = new QToolBar();
     toolbar->setMovable(false);
     toolbar->setFloatable(false);
     this->addToolBar(toolbar);
+
+
+    const QIcon openIcon = QIcon::fromTheme("document-open");
+    auto * openAct = new QAction(openIcon, tr("&Open..."), this);
+    openAct->setShortcuts(QKeySequence::Open);
+    openAct->setStatusTip(tr("Open an existing file"));
+
+    connect(openAct, &QAction::triggered, [=, this] {
+        load_document();
+    });
+
     toolbar->addAction(openAct);
+
+
+    auto page_indicator = new QLabel("0");
+    toolbar->addSeparator();
+    toolbar->addWidget(page_indicator);
+
+    connect(view, &GraphicsView::page_updated,
+            [=, this] {
+                page_indicator->setText(QString::number(view->get_middle_page_num()));
+            });
 }
 
 void farMainWindow::jump_to_page(int n) {

@@ -16,6 +16,7 @@ GraphicsView::GraphicsView() {
             &QScrollBar::valueChanged,
             [=, this] {
                 this->make_sure_pages();
+                emit page_updated();
             });
 }
 
@@ -28,18 +29,15 @@ void GraphicsView::update_doc(document * doc_) {
 }
 
 void GraphicsView::addPage(int n) {
-    if (live_pages.size() > 10)
-    {
+    if (live_pages.size() > 10) {
         auto to_be_del = live_pages.dequeue();
         scene->removeItem(to_be_del);
         delete to_be_del;
     }
 
     // Guard to avoid duplicated page rendering
-    for (auto i: live_pages)
-    {
-        if (i->page_num == n)
-        {
+    for (auto i: live_pages) {
+        if (i->page_num == n) {
             return;
         }
     }
@@ -68,32 +66,26 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
     int page_n_high;
 
     // from head to end, find the first that bigger than top
-    for (int i = 0; i < m_doc->page_acc_h.size(); ++i)
-    {
-        if (top <= m_doc->page_acc_h[i])
-        {
+    for (int i = 0; i < m_doc->page_acc_h.size(); ++i) {
+        if (top <= m_doc->page_acc_h[i]) {
             page_n_low = i - 1;
             break;
         }
     }
 
-    for (int i = m_doc->page_acc_h.size() - 1; i >= 0; --i)
-    {
-        if (bot > m_doc->page_acc_h[i])
-        {
+    for (int i = m_doc->page_acc_h.size() - 1; i >= 0; --i) {
+        if (bot > m_doc->page_acc_h[i]) {
             page_n_high = i + 1;
             break;
         }
     }
 
     // Guard to prevent requesting more pages than reality.
-    if (page_n_high > m_doc->pageCount)
-    {
+    if (page_n_high > m_doc->pageCount) {
         page_n_high = m_doc->pageCount;
     }
 
-    if (page_n_low < 0)
-    {
+    if (page_n_low < 0) {
         page_n_high = 0;
     }
 
@@ -103,8 +95,18 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
 }
 
 void GraphicsView::make_sure_pages() {
-    for (auto x: demanded_page_numbers())
-    {
+    for (auto x: demanded_page_numbers()) {
         addPage(x);
+    }
+}
+
+int GraphicsView::get_middle_page_num() {
+    auto item = scene->itemAt(mapToScene(this->viewport()->geometry().center()),
+                              QTransform());
+    if (item) {
+        // Note: the cast should be avoided if the scene is subclassed
+        return dynamic_cast<GraphicsPageItem *>(item)->page_num;
+    } else {
+        return 0;
     }
 }

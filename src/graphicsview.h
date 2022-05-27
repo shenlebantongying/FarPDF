@@ -15,6 +15,11 @@ public:
     QGraphicsScene * scene;
     void update_doc(document * doc_);
 
+    int get_middle_page_num();
+
+signals:
+    void page_updated();
+
 private:
     document * m_doc;
 
