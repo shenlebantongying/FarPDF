@@ -17,13 +17,15 @@ public:
 
     int get_middle_page_num();
     void zoom_to(float factor);
+    void jump_to_page(int n);
+    
 
 signals:
     void page_updated();
 
 private:
     document * m_doc;
-
+    float zoom_factor;
     void addPage(int n);
 
     // pages that are visible to users;

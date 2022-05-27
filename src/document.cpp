@@ -3,7 +3,6 @@
 #include <iostream>
 document::document(const std::string & path) {
     ctx = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
-    ctm = fz_scale(1, 1);
 
     fz_try(ctx) {
         fz_register_document_handlers(ctx);
@@ -28,7 +27,9 @@ document::document(const std::string & path) {
     max_page_width += 50;
 }
 
-QPixmap document::get_QPixmap_from_page_number(int n) {
+QPixmap document::get_QPixmap_from_page_number(int n, float zoom_factor) {
+    
+    auto ctm = fz_scale(zoom_factor, zoom_factor);
     fz_pixmap * pix = fz_new_pixmap_from_page(ctx, pages[n], ctm, fz_device_rgb(ctx), 0);
 
     // Without new, the QImg will be auto destroyed when goes out of scope

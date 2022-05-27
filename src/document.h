@@ -12,7 +12,7 @@ class document {
 public:
     explicit document(const std::string & path);
     ~document();
-    QPixmap get_QPixmap_from_page_number(int n);
+    QPixmap get_QPixmap_from_page_number(int n, float zoom_factor);
 
     fz_document * m_doc;
 
@@ -32,7 +32,6 @@ public:
 
 private:
     fz_context * ctx;
-    fz_matrix ctm{};
 };
 
 #endif// DOC_H

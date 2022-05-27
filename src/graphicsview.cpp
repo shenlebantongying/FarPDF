@@ -7,6 +7,8 @@ GraphicsView::GraphicsView() {
     m_doc = nullptr;
     scene = new QGraphicsScene();
 
+    zoom_factor = 1;
+
     setScene(scene);
 
     // The middle point of 1st page's boundary is (0,0)
@@ -26,9 +28,11 @@ void GraphicsView::update_doc(document * doc_) {
     scene->clear();
     live_pages.clear();
 
+    // TODO: temporal hack, just get first page's width and consider it the whole doc.
     addPage(0);
+    scene->setSceneRect(0, 0, scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
 
-    scene->setSceneRect(0, 0, scene->itemsBoundingRect().width(), m_doc->page_acc_h.back());
+    make_sure_pages();
 }
 
 void GraphicsView::addPage(int n) {
@@ -45,8 +49,9 @@ void GraphicsView::addPage(int n) {
         }
     }
 
-    auto t_pageItem = new GraphicsPageItem(m_doc->get_QPixmap_from_page_number(n), n, nullptr);
-    t_pageItem->setOffset(0, m_doc->page_acc_h[n]);
+    auto t_pageItem = new GraphicsPageItem(m_doc->get_QPixmap_from_page_number(n, zoom_factor), n, nullptr);
+    t_pageItem->setOffset(0, m_doc->page_acc_h[n] * zoom_factor);
+
     scene->addItem(t_pageItem);
     live_pages.enqueue(t_pageItem);
 }
@@ -70,14 +75,14 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
 
     // from head to end, find the first that bigger than top
     for (int i = 0; i < m_doc->page_acc_h.size(); ++i) {
-        if (top <= m_doc->page_acc_h[i]) {
+        if (top <= zoom_factor * m_doc->page_acc_h[i]) {
             page_n_low = i - 1;
             break;
         }
     }
 
     for (int i = m_doc->page_acc_h.size() - 1; i >= 0; --i) {
-        if (bot > m_doc->page_acc_h[i]) {
+        if (bot > zoom_factor * m_doc->page_acc_h[i]) {
             page_n_high = i + 1;
             break;
         }
@@ -115,5 +120,16 @@ int GraphicsView::get_middle_page_num() {
 }
 
 void GraphicsView::zoom_to(float factor) {
-    setTransform(QTransform().scale(factor, factor));
+    zoom_factor = factor;
+
+    scene->clear();
+    live_pages.clear();
+    addPage(0);
+
+    scene->setSceneRect(0, 0, zoom_factor * scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
+    make_sure_pages();
+}
+
+void GraphicsView::jump_to_page(int n) {
+    centerOn(0, zoom_factor * (m_doc->page_acc_h.at(n + 1) + m_doc->page_acc_h.at(n)) / 2.0);
 }

@@ -66,7 +66,10 @@ farMainWindow::farMainWindow(QWidget * parent) {
     // Zoom switcher
     auto zoom_switcher = new QComboBox(this);
     zoom_switcher->addItem(" 50%", 0.5);
+    zoom_switcher->addItem(" 75%", 0.75);
     zoom_switcher->addItem("100%", 1.0);
+    zoom_switcher->addItem("110%", 1.1);
+    zoom_switcher->addItem("125%", 1.25);
     zoom_switcher->addItem("150%", 1.5);
     zoom_switcher->addItem("200%", 2.0);
     zoom_switcher->setCurrentText("100%");
@@ -75,12 +78,14 @@ farMainWindow::farMainWindow(QWidget * parent) {
 
     connect(zoom_switcher, &QComboBox::currentIndexChanged,
             [=, this] {
-                view->zoom_to(zoom_switcher->currentData().toFloat());
+                if (m_doc != nullptr) {
+                    view->zoom_to(zoom_switcher->currentData().toFloat());
+                }
             });
 }
 
 void farMainWindow::jump_to_page(int n) {
-    view->centerOn(0, (m_doc->page_acc_h.at(n + 1) + m_doc->page_acc_h.at(n)) / 2.0);
+    view->jump_to_page(n);
 }
 
 void farMainWindow::load_document() {
