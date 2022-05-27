@@ -36,3 +36,21 @@ set_target_properties(FarPDF PROPERTIES
         )
 
 qt_finalize_executable(FarPDF)
+
+# Doxygen
+find_package(Doxygen
+        REQUIRED dot
+        OPTIONAL_COMPONENTS mscgen dia)
+
+if(NOT DOXYGEN_FOUND)
+    message(WARNING "Doxygen not found - Documentation will not be generated!")
+else()
+    # output -> build/html
+    set(DOXYGEN_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/doxygen")
+
+
+    doxygen_add_docs(src_doc
+        ${PROJECT_SOURCES}
+        )
+endif()
+
