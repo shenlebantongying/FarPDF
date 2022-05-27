@@ -13,11 +13,13 @@ class GraphicsView : public QGraphicsView
 
 
 public:
-    explicit GraphicsView(document &doc);
+     GraphicsView();
     QGraphicsScene * scene;
+    void update_doc(document * doc_);
+
 
 private:
-    document & m_doc;
+    document * m_doc;
 
     void addPage(int n);
 
@@ -34,8 +36,6 @@ private:
     QList<QGraphicsItem *> get_visible_page_items();
 
     void mousePressEvent(QMouseEvent *event) override;
-
-    void delete_pages(std::vector<int> pages) const;
 
     void make_sure_pages();
 

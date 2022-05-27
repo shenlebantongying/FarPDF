@@ -3,20 +3,26 @@
 #include <QMouseEvent>
 #include <QScrollBar>
 
-GraphicsView::GraphicsView(document & doc_)
-    :m_doc(doc_)
+GraphicsView::GraphicsView()
 {
+    m_doc = nullptr;
     scene = new QGraphicsScene();
-    setScene(scene);
-    scene->setSceneRect(0,0,m_doc.max_page_width,m_doc.page_acc_h.back());
 
+    setScene(scene);
     // The middle point of 1st page's boundary is (0,0)
 
     scene->setBackgroundBrush(Qt::lightGray);
 
-    addPage(0);
     connect(this->verticalScrollBar(),&QScrollBar::valueChanged,
             [=,this]{this->make_sure_pages();});
+}
+
+void GraphicsView::update_doc(document * doc_){
+    m_doc = doc_;
+    scene->clear();
+    live_pages.clear();
+    scene->setSceneRect(0,0,m_doc->max_page_width,m_doc->page_acc_h.back());
+    addPage(0);
 }
 
 void GraphicsView::addPage(int n){
@@ -33,8 +39,8 @@ void GraphicsView::addPage(int n){
         }
     }
 
-    auto t_pageItem = new GraphicsPageItem(m_doc.get_QPixmap_from_page_number(n), n, nullptr);
-    t_pageItem->setOffset(0, m_doc.page_acc_h[n]);
+    auto t_pageItem = new GraphicsPageItem(m_doc->get_QPixmap_from_page_number(n), n, nullptr);
+    t_pageItem->setOffset(0, m_doc->page_acc_h[n]);
     scene->addItem(t_pageItem);
     live_pages.enqueue(t_pageItem);
 }
@@ -57,23 +63,23 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
      int page_n_high;
 
     // from head to end, find the first that bigger than top
-    for (int i = 0; i < m_doc.page_acc_h.size(); ++i) {
-        if (top<=m_doc.page_acc_h[i]){
+    for (int i = 0; i < m_doc->page_acc_h.size(); ++i) {
+        if (top<=m_doc->page_acc_h[i]){
             page_n_low = i-1;
             break;
         }
     }
 
-    for (int i = m_doc.page_acc_h.size()-1 ; i >=0 ; --i) {
-        if (bot>m_doc.page_acc_h[i]){
+    for (int i = m_doc->page_acc_h.size()-1 ; i >=0 ; --i) {
+        if (bot>m_doc->page_acc_h[i]){
             page_n_high = i+1;
             break;
         }
     }
 
     // Guard to prevent requesting more pages than reality.
-    if (page_n_high>m_doc.pageCount){
-        page_n_high = m_doc.pageCount;
+    if (page_n_high>m_doc->pageCount){
+        page_n_high = m_doc->pageCount;
     }
 
     if (page_n_low<0){
@@ -81,7 +87,7 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
     }
 
     std::vector<int> v(page_n_high-page_n_low);
-    std::iota (std::begin(v), std::end(v), page_n_low);;
+    std::iota (std::begin(v), std::end(v), page_n_low);
     return v;
 }
 

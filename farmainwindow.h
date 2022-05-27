@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QTreeView>
 #include <QDockWidget>
+#include <QToolBar>
+
 #include "graphicsview.h"
 #include "toctreemodel.h"
 #include "document.h"
@@ -24,7 +26,11 @@ private:
     tocTreeModel * toc;
     QTreeView * tocView;
 
+    QToolBar * toolbar;
+
     void jump_to_page(int n);
+
+    void load_document();
 };
 
 #endif // FARMAINWINDOW_H
