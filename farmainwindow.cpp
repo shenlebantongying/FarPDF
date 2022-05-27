@@ -1,9 +1,8 @@
 #include <QFileDialog>
+
 #include "farmainwindow.h"
 
-
-farMainWindow::farMainWindow(QWidget *parent)
-{
+farMainWindow::farMainWindow(QWidget * parent) {
     // init code should not related to specific doc,
     // set it to null to make sure the program will crash;
     m_doc = nullptr;
@@ -11,12 +10,11 @@ farMainWindow::farMainWindow(QWidget *parent)
     view = new GraphicsView();
     setCentralWidget(view);
 
-    setMinimumSize(800,600);
+    setMinimumSize(800, 600);
 
     toc_dock = new QDockWidget("Table of Contents", this);
     tocView = new QTreeView();
     toc = nullptr;
-
 
     // Note: we will take the dock to a standalone one later
     addDockWidget(Qt::LeftDockWidgetArea, toc_dock);
@@ -33,10 +31,10 @@ farMainWindow::farMainWindow(QWidget *parent)
     // Main Toolbar
 
     const QIcon openIcon = QIcon::fromTheme("document-open");
-    auto *openAct = new QAction(openIcon, tr("&Open..."), this);
+    auto * openAct = new QAction(openIcon, tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
-    connect(openAct, &QAction::triggered, [=,this]{
+    connect(openAct, &QAction::triggered, [=, this] {
         load_document();
     });
     toolbar = new QToolBar();
@@ -47,17 +45,16 @@ farMainWindow::farMainWindow(QWidget *parent)
 }
 
 void farMainWindow::jump_to_page(int n) {
-    view->centerOn(0, (m_doc->page_acc_h.at(n+1) + m_doc->page_acc_h.at(n)) / 2.0);
+    view->centerOn(0, (m_doc->page_acc_h.at(n + 1) + m_doc->page_acc_h.at(n)) / 2.0);
 }
 
 void farMainWindow::load_document() {
-
     delete m_doc;
     m_doc = new document(QFileDialog::getOpenFileName(this,
-                                              "Open File",
-                                              QDir::homePath(),
-                                              "Documents (*.pdf)")
-                         .toStdString());
+                                                      "Open File",
+                                                      QDir::homePath(),
+                                                      "Documents (*.pdf)")
+                                 .toStdString());
 
     view->update_doc(m_doc);
 
@@ -67,12 +64,10 @@ void farMainWindow::load_document() {
     tocView->setModel(toc);
     toc_dock->show();
 
-
     connect(tocView->selectionModel(),
             &QItemSelectionModel::currentChanged,
             // TODO: side effect -> open a doc will always end up in the 1st bookmark
-            [=, this](const QModelIndex &current, const QModelIndex &previous) {
+            [=, this](const QModelIndex & current, const QModelIndex & previous) {
                 jump_to_page(toc->page_num_from_index(current));
             });
 }
-

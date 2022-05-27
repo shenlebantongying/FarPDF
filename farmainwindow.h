@@ -1,20 +1,19 @@
 #ifndef FARMAINWINDOW_H
 #define FARMAINWINDOW_H
 
-#include <QMainWindow>
-#include <QTreeView>
 #include <QDockWidget>
+#include <QMainWindow>
 #include <QToolBar>
+#include <QTreeView>
 
+#include "document.h"
 #include "graphicsview.h"
 #include "toctreemodel.h"
-#include "document.h"
 
-class farMainWindow : public QMainWindow
-{
+class farMainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    explicit farMainWindow(QWidget *parent = nullptr);
+    explicit farMainWindow(QWidget * parent = nullptr);
 
 signals:
 
@@ -33,4 +32,4 @@ private:
     void load_document();
 };
 
-#endif // FARMAINWINDOW_H
+#endif// FARMAINWINDOW_H

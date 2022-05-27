@@ -1,18 +1,16 @@
 #ifndef DOC_H
 #define DOC_H
 
+#include <QPixmap>
 #include <mupdf/fitz.h>
 #include <string>
-#include <QPixmap>
-
 
 // Note: mupdf uses reference counting for memory management.
 // To avoid problems, all fz_ related code should belong here.
 
-class document
-{
+class document {
 public:
-    explicit document(const std::string &path);
+    explicit document(const std::string & path);
     ~document();
     QPixmap get_QPixmap_from_page_number(int n);
 
@@ -21,7 +19,7 @@ public:
     fz_outline * get_outline();
 
     // Note: without render, this consumes very little memory
-    std::vector<fz_page*> pages;
+    std::vector<fz_page *> pages;
 
     // internally we always store page number as 0-indexed.
     // We only do the +1 when present them in UI.
@@ -32,12 +30,9 @@ public:
     // Accumulated page heights
     std::vector<float> page_acc_h;
 
-
 private:
     fz_context * ctx;
     fz_matrix ctm{};
-
-
 };
 
-#endif // DOC_H
+#endif// DOC_H
