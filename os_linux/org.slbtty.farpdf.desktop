@@ -1,0 +1,11 @@
+[Desktop Entry]
+Terminal=false
+Name=FarViewer
+GenericName=Document Viewer
+Exec=FarPDF %U
+Icon=application-pdf
+Type=Application
+InitialPreference=7
+Categories=Qt;Graphics;Office;Viewer;
+MimeType=application/pdf
+StartupWMClass=farpdf

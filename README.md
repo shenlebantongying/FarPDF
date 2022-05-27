@@ -14,5 +14,8 @@ cmake --build build --parallel 6
 # The binary will end up in `build/src/FarPDF`.
 
 cmake --install build
+
+# The binary will installed to /usr/local and
+#   an app launcher will be installed to yor desktop's launcher
 ```
 
