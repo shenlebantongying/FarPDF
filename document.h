@@ -13,7 +13,7 @@ class document
 {
 public:
     explicit document(const std::string &path);
-
+    ~document();
     QPixmap get_QPixmap_from_page_number(int n);
 
     fz_document * m_doc;

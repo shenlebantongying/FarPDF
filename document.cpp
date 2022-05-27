@@ -51,4 +51,10 @@ fz_outline * document::get_outline() {
     return fz_load_outline(ctx,m_doc);;
 }
 
+document::~document() {
+    // TODO: does everything recycled?
+    fz_drop_document(ctx,m_doc);
+    fz_drop_context(ctx);
+}
+
 
