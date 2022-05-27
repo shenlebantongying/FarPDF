@@ -66,7 +66,7 @@ if (FREETYPE_FOUND AND ZLIB_FOUND AND JPEG_FOUND AND GUMBO_FOUND AND OPENJP2_FOU
             ${FREETYPE_LIBRARIES}
             ${ZLIB_LIBRARIES}
             ${JPEG_LIBRARIES}
-            LINUX_SPECIFIC_LIBS
+            ${LINUX_SPECIFIC_LIBS}
             )
     else()
         set(MUPDF_LIBRARIES
