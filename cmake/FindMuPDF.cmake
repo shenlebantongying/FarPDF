@@ -55,16 +55,27 @@ find_package_handle_standard_args(MuPDF
 
 if (FREETYPE_FOUND AND ZLIB_FOUND AND JPEG_FOUND AND GUMBO_FOUND AND OPENJP2_FOUND AND HARFBUZZ_FOUND)
     set(MUPDF_FOUND 1)
+    set(LINUX_SPECIFIC_LIBS
+                ${HARFBUZZ_LIBRARIES}
+                ${JBIG2DEC_LIBRARIES}
+                ${GUMBO_LIBRARIES}
+                ${OPENJP2_LIBRARIES})
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(MUPDF_LIBRARIES
             ${MUPDF_LIBRARY}
             ${FREETYPE_LIBRARIES}
             ${ZLIB_LIBRARIES}
             ${JPEG_LIBRARIES}
-            ${HARFBUZZ_LIBRARIES}
-            ${JBIG2DEC_LIBRARIES}
-            ${GUMBO_LIBRARIES}
-            ${OPENJP2_LIBRARIES}
+            LINUX_SPECIFIC_LIBS
             )
+    else()
+        set(MUPDF_LIBRARIES
+            ${MUPDF_LIBRARY}
+            ${FREETYPE_LIBRARIES}
+            ${ZLIB_LIBRARIES}
+            ${JPEG_LIBRARIES}
+            )
+    endif()
 
     set(MUPDF_INCLUDE_DIRS
             ${MUPDF_INCLUDE_DIR}
