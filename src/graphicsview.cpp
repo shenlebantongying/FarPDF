@@ -8,10 +8,11 @@ GraphicsView::GraphicsView() {
     scene = new QGraphicsScene();
 
     setScene(scene);
+
     // The middle point of 1st page's boundary is (0,0)
+    setAlignment(Qt::AlignTop);
 
     scene->setBackgroundBrush(Qt::lightGray);
-
     connect(this->verticalScrollBar(),
             &QScrollBar::valueChanged,
             [=, this] {
@@ -24,8 +25,10 @@ void GraphicsView::update_doc(document * doc_) {
     m_doc = doc_;
     scene->clear();
     live_pages.clear();
-    scene->setSceneRect(0, 0, m_doc->max_page_width, m_doc->page_acc_h.back());
+
     addPage(0);
+
+    scene->setSceneRect(0, 0, scene->itemsBoundingRect().width(), m_doc->page_acc_h.back());
 }
 
 void GraphicsView::addPage(int n) {

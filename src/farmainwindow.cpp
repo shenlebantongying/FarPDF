@@ -11,8 +11,6 @@ farMainWindow::farMainWindow(QWidget * parent) {
     view = new GraphicsView();
     setCentralWidget(view);
 
-    setMinimumSize(800, 600);
-
     toc_dock = new QDockWidget("Table of Contents", this);
     tocView = new QTreeView();
     toc = nullptr;
@@ -34,6 +32,7 @@ farMainWindow::farMainWindow(QWidget * parent) {
     toolbar = new QToolBar();
     toolbar->setMovable(false);
     toolbar->setFloatable(false);
+    toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
     this->addToolBar(toolbar);
 
 
@@ -49,13 +48,13 @@ farMainWindow::farMainWindow(QWidget * parent) {
     toolbar->addAction(openAct);
 
 
-    auto page_indicator = new QLabel("0");
+    auto page_indicator = new QLabel("0", this);
     toolbar->addSeparator();
     toolbar->addWidget(page_indicator);
 
     connect(view, &GraphicsView::page_updated,
             [=, this] {
-                page_indicator->setText(QString::number(view->get_middle_page_num()));
+                page_indicator->setNum(view->get_middle_page_num());
             });
 }
 

@@ -16,12 +16,10 @@ document::document(const std::string & path) {
     pageCount = fz_count_pages(ctx, m_doc);
     max_page_width = 0;
     page_acc_h.push_back(0);
-    for (int i = 0; i < pageCount; ++i)
-    {
+    for (int i = 0; i < pageCount; ++i) {
         pages.emplace_back(fz_load_page(ctx, m_doc, i));
         page_acc_h.emplace_back(page_acc_h.back() + fz_bound_page(ctx, pages.at(i)).y1);
-        if (fz_bound_page(ctx, pages.at(i)).x1 > max_page_width)
-        {
+        if (fz_bound_page(ctx, pages.at(i)).x1 > max_page_width) {
             // Note: Here i made an assumption that (x0,y0) of pdf file are
             // always (0,0) thus x1 value = width. Is this always true??
             max_page_width = fz_bound_page(ctx, pages.at(i)).x1;
