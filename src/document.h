@@ -1,13 +1,21 @@
 #ifndef DOC_H
 #define DOC_H
 
-#include <QPixmap>
 #include <mupdf/fitz.h>
+
+// Qt related
+#include <QList>
+#include <QPixmap>
+#include <QRectF>
+
+// Extra
 #include <string>
 
-// Note: mupdf uses reference counting for memory management.
-// To avoid problems, all fz_ related code should belong here.
 
+/**
+ * @brief Bridging mupdf and Qt/C++ : All bits that related to mupdf belong to here! \n
+ * Note: mupdf uses reference counting for memory management.
+ */
 class document {
 public:
     explicit document(const std::string & path);
@@ -30,8 +38,22 @@ public:
     // Accumulated page heights
     std::vector<float> page_acc_h;
 
+    /**
+     * @brief A very raw wrapper that will modify the last param
+     * @param page_num
+     * @param pointA
+     * @param pointB
+     * @param hl_quads Constructed by caller, and modify it directly.
+     * @return Number of quads
+     */
+    int highlight_selection(int page_num, QPointF pointA, QPointF pointB, QList<QRectF> & hl_quads);
+
 private:
     fz_context * ctx;
+
+    // Utils
+    static fz_point QPointF_to_fz_point(QPointF p);
+    static QRectF fz_quad_to_QRectF(fz_quad q);
 };
 
 #endif// DOC_H

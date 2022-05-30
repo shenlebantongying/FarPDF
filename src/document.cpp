@@ -28,7 +28,7 @@ document::document(const std::string & path) {
 }
 
 QPixmap document::get_QPixmap_from_page_number(int n, float zoom_factor) {
-    
+
     auto ctm = fz_scale(zoom_factor, zoom_factor);
     fz_pixmap * pix = fz_new_pixmap_from_page(ctx, pages[n], ctm, fz_device_rgb(ctx), 0);
 
@@ -51,4 +51,36 @@ document::~document() {
     // TODO: does everything recycled?
     fz_drop_document(ctx, m_doc);
     fz_drop_context(ctx);
+}
+int document::highlight_selection(int page_num, QPointF pointA, QPointF pointB, QList<QRectF> & hl_quads) {
+    auto temp_stext_page = fz_new_stext_page_from_page_number(ctx, m_doc, page_num, nullptr);
+
+    static fz_quad hits[500];
+
+    auto n_of_quads = fz_highlight_selection(ctx,
+                                             temp_stext_page,
+                                             QPointF_to_fz_point(pointA),
+                                             QPointF_to_fz_point(pointB),
+                                             hits,
+                                             nelem(hits));
+    for (int i = 0; i < n_of_quads; ++i) {
+        hl_quads.append(fz_quad_to_QRectF(hits[i]));
+    }
+
+    // Memory cleanup
+    fz_drop_stext_page(ctx, temp_stext_page);
+
+    return n_of_quads;
+}
+
+fz_point document::QPointF_to_fz_point(QPointF p) {
+    return fz_make_point(p.x(), p.y());
+}
+
+
+QRectF document::fz_quad_to_QRectF(fz_quad q) {
+    QPointF tl = QPointF(q.ul.x, q.ul.y);
+    QPointF br = QPointF(q.lr.x, q.lr.y);
+    //QRectF(const QPointF &topLeft, const QPointF &bottomRight)
+    return {tl, br};
 }

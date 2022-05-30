@@ -42,6 +42,16 @@ void GraphicsView::update_doc(document * doc_) {
     addPage(0);
     scene->setSceneRect(0, 0, scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
 
+
+    // TODO: remove this testing
+
+    auto hls = new QList<QRectF>();
+    m_doc->highlight_selection(0, QPointF(0, 0), QPointF(1000, 1500), *hls);
+
+    for (auto r: *hls) {
+        scene->addRect(r);
+    }
+
     make_sure_pages();
 }
 
