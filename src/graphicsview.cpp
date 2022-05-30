@@ -7,9 +7,17 @@ GraphicsView::GraphicsView() {
     m_doc = nullptr;
     scene = new QGraphicsScene();
 
+    // This enable mouse selection
+    setMouseTracking(true);
+
     zoom_factor = 1;
 
     setScene(scene);
+
+    // select_rect rectangle
+    select_rect = new QGraphicsPolygonItem();
+    select_rect->setVisible(false);
+    select_rect->setZValue(100);
 
     // The middle point of 1st page's boundary is (0,0)
     setAlignment(Qt::AlignTop);
@@ -27,6 +35,8 @@ void GraphicsView::update_doc(document * doc_) {
     m_doc = doc_;
     scene->clear();
     live_pages.clear();
+
+    scene->addItem(select_rect);
 
     // TODO: temporal hack, just get first page's width and consider it the whole doc.
     addPage(0);
@@ -58,11 +68,6 @@ void GraphicsView::addPage(int n) {
 
 QList<QGraphicsItem *> GraphicsView::get_visible_page_items() {
     return scene->items(mapToScene(this->viewport()->geometry()).boundingRect());
-}
-
-void GraphicsView::mousePressEvent(QMouseEvent * event) {
-    // make_sure_pages();
-    // qDebug()<<get_visible_page_items();
 }
 
 std::vector<int> GraphicsView::demanded_page_numbers() {
@@ -132,4 +137,40 @@ void GraphicsView::zoom_to(float factor) {
 
 void GraphicsView::jump_to_page(int n) {
     centerOn(0, zoom_factor * (m_doc->page_acc_h.at(n + 1) + m_doc->page_acc_h.at(n)) / 2.0);
+}
+
+// -------------------------------------------------------
+//    Mouse Movement handling
+// -------------------------------------------------------
+
+void GraphicsView::mousePressEvent(QMouseEvent * event) {
+    dragBeg_P = event->pos();
+    select_rect->setVisible(true);
+}
+
+void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
+    select_rect->setVisible(false);
+    select_rect->setPos(0, 0);
+}
+
+void GraphicsView::mouseMoveEvent(QMouseEvent * event) {
+    if (select_rect->isVisible()) {
+        dragEnd_P = event->pos();
+
+        int dx = dragEnd_P.x() - dragBeg_P.x();
+        int dy = dragEnd_P.y() - dragBeg_P.y();
+
+        int width = abs(dx);
+        int height = abs(dy);
+
+        if (dx > 0 && dy > 0) {
+            select_rect->setPolygon(mapToScene(QRect(dragBeg_P.x(), dragBeg_P.y(), width, height)));
+        } else if (dx < 0 && dy > 0) {
+            select_rect->setPolygon(mapToScene(QRect(dragEnd_P.x(), dragBeg_P.y(), width, height)));
+        } else if (dx > 0 && dy < 0) {
+            select_rect->setPolygon(mapToScene(QRect(dragBeg_P.x(), dragEnd_P.y(), width, height)));
+        } else {
+            select_rect->setPolygon(mapToScene(QRect(dragEnd_P.x(), dragEnd_P.y(), width, height)));
+        }
+    }
 }

@@ -15,10 +15,11 @@ public:
     QGraphicsScene * scene;
     void update_doc(document * doc_);
 
+
     int get_middle_page_num();
     void zoom_to(float factor);
     void jump_to_page(int n);
-    
+
 
 signals:
     void page_updated();
@@ -26,6 +27,11 @@ signals:
 private:
     document * m_doc;
     float zoom_factor;
+
+    QGraphicsPolygonItem * select_rect;
+    QPoint dragBeg_P;
+    QPoint dragEnd_P;
+
     void addPage(int n);
 
     // pages that are visible to users;
@@ -41,6 +47,8 @@ private:
     QList<QGraphicsItem *> get_visible_page_items();
 
     void mousePressEvent(QMouseEvent * event) override;
+    void mouseReleaseEvent(QMouseEvent * event) override;
+    void mouseMoveEvent(QMouseEvent * event) override;
 
     void make_sure_pages();
 };
