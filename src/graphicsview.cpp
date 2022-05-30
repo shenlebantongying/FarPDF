@@ -6,6 +6,7 @@
 GraphicsView::GraphicsView() {
     m_doc = nullptr;
     scene = new QGraphicsScene();
+    select_group = new QGraphicsItemGroup();
 
     // This enable mouse selection
     setMouseTracking(true);
@@ -36,21 +37,11 @@ void GraphicsView::update_doc(document * doc_) {
     scene->clear();
     live_pages.clear();
 
-    scene->addItem(select_rect);
-
     // TODO: temporal hack, just get first page's width and consider it the whole doc.
     addPage(0);
     scene->setSceneRect(0, 0, scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
 
-
-    // TODO: remove this testing
-
-    auto hls = new QList<QRectF>();
-    m_doc->highlight_selection(0, QPointF(0, 0), QPointF(1000, 1500), *hls);
-
-    for (auto r: *hls) {
-        scene->addRect(r);
-    }
+    scene->addItem(select_group);
 
     make_sure_pages();
 }
@@ -155,13 +146,28 @@ void GraphicsView::jump_to_page(int n) {
 // -------------------------------------------------------
 
 void GraphicsView::mousePressEvent(QMouseEvent * event) {
+    for (auto x: select_group->childItems()) {
+        select_group->removeFromGroup(x);
+        delete x;
+    }
+
     dragBeg_P = event->pos();
+
     select_rect->setVisible(true);
 }
 
 void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
     select_rect->setVisible(false);
     select_rect->setPos(0, 0);
+
+    // TODO: remove this testing
+
+    auto hls = new QList<QRectF>();
+    m_doc->highlight_selection(0, dragBeg_P, dragEnd_P, *hls);
+
+    for (auto r: *hls) {
+        select_group->addToGroup(new QGraphicsRectItem(r));
+    }
 }
 
 void GraphicsView::mouseMoveEvent(QMouseEvent * event) {

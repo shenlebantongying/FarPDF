@@ -53,9 +53,10 @@ document::~document() {
     fz_drop_context(ctx);
 }
 int document::highlight_selection(int page_num, QPointF pointA, QPointF pointB, QList<QRectF> & hl_quads) {
-    auto temp_stext_page = fz_new_stext_page_from_page_number(ctx, m_doc, page_num, nullptr);
+    auto temp_page = fz_load_page(ctx, m_doc, page_num);
+    auto temp_stext_page = fz_new_stext_page_from_page(ctx, temp_page, nullptr);
 
-    static fz_quad hits[500];
+    fz_quad hits[500];
 
     auto n_of_quads = fz_highlight_selection(ctx,
                                              temp_stext_page,
@@ -68,6 +69,7 @@ int document::highlight_selection(int page_num, QPointF pointA, QPointF pointB, 
     }
 
     // Memory cleanup
+    fz_drop_page(ctx, temp_page);
     fz_drop_stext_page(ctx, temp_stext_page);
 
     return n_of_quads;

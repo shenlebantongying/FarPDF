@@ -32,6 +32,8 @@ private:
     QPoint dragBeg_P;
     QPoint dragEnd_P;
 
+    QGraphicsItemGroup * select_group;
+
     void addPage(int n);
 
     // pages that are visible to users;
