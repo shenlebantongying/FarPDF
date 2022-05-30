@@ -30,6 +30,7 @@ private:
     void jump_to_page(int n);
 
     void load_document();
+    void show_metadata_dialog();
 };
 
 #endif// FARMAINWINDOW_H

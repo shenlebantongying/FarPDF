@@ -86,3 +86,20 @@ QRectF document::fz_quad_to_QRectF(fz_quad q) {
     //QRectF(const QPointF &topLeft, const QPointF &bottomRight)
     return {tl, br};
 }
+
+std::string document::get_metadata_string() {
+    char buf[100];
+
+    std::stringstream result;
+
+    fz_lookup_metadata(ctx, m_doc, FZ_META_INFO_TITLE, buf, sizeof buf);
+    result << "Title: " << buf << std::endl;
+    fz_lookup_metadata(ctx, m_doc, FZ_META_INFO_CREATOR, buf, sizeof buf);
+    result << "Creator: " << buf << std::endl;
+    fz_lookup_metadata(ctx, m_doc, FZ_META_INFO_PRODUCER, buf, sizeof buf);
+    result << "Producer: " << buf << std::endl;
+    fz_lookup_metadata(ctx, m_doc, FZ_META_ENCRYPTION, buf, sizeof buf);
+    result << "Encryption: " << buf << std::endl;
+
+    return result.str();
+}

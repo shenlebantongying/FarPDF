@@ -48,6 +48,8 @@ public:
      */
     int highlight_selection(int page_num, QPointF pointA, QPointF pointB, QList<QRectF> & hl_quads);
 
+    std::string get_metadata_string();
+    
 private:
     fz_context * ctx;
 

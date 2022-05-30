@@ -51,6 +51,16 @@ farMainWindow::farMainWindow(QWidget * parent) {
 
     toolbar->addAction(openAct);
 
+    // MetaData Dialog
+    auto * infoAct = new QAction(QIcon::fromTheme("documentinfo"), tr("&Open..."), this);
+
+    connect(infoAct, &QAction::triggered, [=, this] {
+        show_metadata_dialog();
+    });
+
+    toolbar->addAction(infoAct);
+
+
     // Page Indicator
     auto page_indicator = new QLabel("0", this);
     toolbar->addSeparator();
@@ -114,4 +124,15 @@ void farMainWindow::load_document() {
             [=, this](const QModelIndex & current, const QModelIndex & previous) {
                 jump_to_page(toc->page_num_from_index(current));
             });
+}
+
+void farMainWindow::show_metadata_dialog() {
+    if (m_doc) {
+        auto metaDialog = new QLabel();
+        metaDialog->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        metaDialog->setMargin(10);
+        metaDialog->setText(QString::fromStdString(m_doc->get_metadata_string()));
+        metaDialog->setAttribute(Qt::WA_DeleteOnClose);
+        metaDialog->show();
+    }
 }
