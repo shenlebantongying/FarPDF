@@ -41,7 +41,7 @@ public:
     /**
      * @brief A very raw wrapper that will modify the last param
      * @param page_num
-     * @param pointA
+     * @param pointA De-scaled before passing
      * @param pointB
      * @param hl_quads Constructed by caller, and modify it directly.
      * @return Number of quads
@@ -49,7 +49,7 @@ public:
     int highlight_selection(int page_num, QPointF pointA, QPointF pointB, QList<QRectF> & hl_quads);
 
     std::string get_metadata_string();
-    
+
 private:
     fz_context * ctx;
 

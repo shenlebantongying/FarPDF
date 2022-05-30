@@ -7,7 +7,7 @@ GraphicsView::GraphicsView() {
     m_doc = nullptr;
     scene = new QGraphicsScene();
     select_group = new QGraphicsItemGroup();
-
+    select_group->setZValue(90);
     // This enable mouse selection
     setMouseTracking(true);
 
@@ -19,7 +19,6 @@ GraphicsView::GraphicsView() {
     select_rect = new QGraphicsPolygonItem();
     select_rect->setVisible(false);
     select_rect->setZValue(100);
-
     // The middle point of 1st page's boundary is (0,0)
     setAlignment(Qt::AlignTop);
 
@@ -42,6 +41,7 @@ void GraphicsView::update_doc(document * doc_) {
     scene->setSceneRect(0, 0, scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
 
     scene->addItem(select_group);
+    scene->addItem(select_rect);
 
     make_sure_pages();
 }
@@ -160,13 +160,21 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
     select_rect->setVisible(false);
     select_rect->setPos(0, 0);
 
-    // TODO: remove this testing
+    // TODO: this is buggy and only works on single page
 
-    auto hls = new QList<QRectF>();
-    m_doc->highlight_selection(0, dragBeg_P, dragEnd_P, *hls);
+    if (itemAt(dragBeg_P) == itemAt(dragEnd_P)) {
+        auto it = dynamic_cast<GraphicsPageItem *>(itemAt(dragBeg_P));
+        float y_off = m_doc->page_acc_h[it->page_num];
+        auto hls = new QList<QRectF>();
+        m_doc->highlight_selection(it->page_num,
+                                   QPointF(dragBeg_P.x(), dragBeg_P.y()),
+                                   QPointF(dragEnd_P.x(), dragEnd_P.y()),
+                                   *hls);
 
-    for (auto r: *hls) {
-        select_group->addToGroup(new QGraphicsRectItem(r));
+        for (auto r: *hls) {
+            auto temp_rect = new QGraphicsRectItem(r.x(), r.y() + y_off, r.width(), r.height());
+            select_group->addToGroup(temp_rect);
+        }
     }
 }
 
