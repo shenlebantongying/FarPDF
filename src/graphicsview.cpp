@@ -124,14 +124,15 @@ void GraphicsView::make_sure_pages() {
 }
 
 int GraphicsView::get_middle_page_num() {
-    auto item = scene->itemAt(mapToScene(this->viewport()->geometry().center()),
-                              QTransform());
-    if (item) {
-        // Note: the cast should be avoided if the scene is subclassed
-        return dynamic_cast<GraphicsPageItem *>(item)->page_num;
-    } else {
-        return 0;
+    auto height = mapToScene(this->viewport()->geometry().center()).y();
+
+    for (int i = 0; i < m_doc->pageCount; ++i) {
+        if (height < m_doc->page_acc_h[i]) {
+            return i;
+        }
     }
+
+    return 0;
 }
 
 void GraphicsView::zoom_to(float factor) {
