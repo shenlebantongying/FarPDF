@@ -8,6 +8,7 @@ GraphicsView::GraphicsView() {
     scene = new QGraphicsScene();
     select_group = new QGraphicsItemGroup();
     select_group->setZValue(90);
+
     // This enable mouse selection
     setMouseTracking(true);
 
@@ -19,6 +20,7 @@ GraphicsView::GraphicsView() {
     select_rect = new QGraphicsPolygonItem();
     select_rect->setVisible(false);
     select_rect->setZValue(100);
+
     // The middle point of 1st page's boundary is (0,0)
     setAlignment(Qt::AlignTop);
 
@@ -77,7 +79,7 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
     qreal top = visable_rect.top();   // smaller value
     qreal bot = visable_rect.bottom();// bigger value
     int page_n_low;
-    int page_n_high;
+    unsigned long page_n_high;
 
     // from head to end, find the first that bigger than top
     for (int i = 0; i < m_doc->page_acc_h.size(); ++i) {
@@ -87,7 +89,7 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
         }
     }
 
-    for (int i = m_doc->page_acc_h.size() - 1; i >= 0; --i) {
+    for (unsigned long i = m_doc->page_acc_h.size() - 1; i >= 0; --i) {
         if (bot > zoom_factor * m_doc->page_acc_h[i]) {
             page_n_high = i + 1;
             break;
@@ -162,17 +164,24 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
 
     // TODO: this is buggy and only works on single page
 
+    QRectF c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
+
+
     if (itemAt(dragBeg_P) == itemAt(dragEnd_P)) {
         auto it = dynamic_cast<GraphicsPageItem *>(itemAt(dragBeg_P));
         float y_off = m_doc->page_acc_h[it->page_num];
         auto hls = new QList<QRectF>();
+
+        ;
+
         m_doc->highlight_selection(it->page_num,
-                                   QPointF(dragBeg_P.x(), dragBeg_P.y()),
-                                   QPointF(dragEnd_P.x(), dragEnd_P.y()),
+                                   QPointF(c_rect.topLeft().x(), c_rect.topLeft().y() - y_off),
+                                   QPointF(c_rect.bottomRight().x(), c_rect.bottomRight().y() - y_off),
                                    *hls);
 
         for (auto r: *hls) {
             auto temp_rect = new QGraphicsRectItem(r.x(), r.y() + y_off, r.width(), r.height());
+            qDebug() << "r from hls" << r;
             select_group->addToGroup(temp_rect);
         }
     }
@@ -182,11 +191,11 @@ void GraphicsView::mouseMoveEvent(QMouseEvent * event) {
     if (select_rect->isVisible()) {
         dragEnd_P = event->pos();
 
-        int dx = dragEnd_P.x() - dragBeg_P.x();
-        int dy = dragEnd_P.y() - dragBeg_P.y();
+        double dx = dragEnd_P.x() - dragBeg_P.x();
+        double dy = dragEnd_P.y() - dragBeg_P.y();
 
-        int width = abs(dx);
-        int height = abs(dy);
+        double width = abs(dx);
+        double height = abs(dy);
 
         if (dx > 0 && dy > 0) {
             select_rect->setPolygon(mapToScene(QRect(dragBeg_P.x(), dragBeg_P.y(), width, height)));
