@@ -91,7 +91,7 @@ QModelIndex tocTreeModel::index(int row, int column, const QModelIndex & parent)
     if (!hasIndex(row, column, parent))
         return {};
 
-    toc_item * parentItem;
+    toc_item * parentItem = nullptr;
 
     if (!parent.isValid())
         parentItem = rootItem;
@@ -119,7 +119,7 @@ QModelIndex tocTreeModel::parent(const QModelIndex & index) const {
 }
 
 int tocTreeModel::rowCount(const QModelIndex & parent) const {
-    toc_item * parentItem;
+    toc_item * parentItem = nullptr;
     if (parent.column() > 0)
         return 0;
     if (!parent.isValid())
@@ -134,8 +134,7 @@ void tocTreeModel::setupModelData(fz_outline * outline, toc_item * parent) {
 
     std::function<void(fz_outline *, toc_item *)> rec_outline;
     rec_outline = [&rec_outline](fz_outline * outline, toc_item * parent) {
-        for (fz_outline * o = outline; o != nullptr; o = o->next)
-        {
+        for (fz_outline * o = outline; o != nullptr; o = o->next) {
             QList<QVariant> columnData;
             columnData << o->title;
             auto temp_item = new toc_item(columnData, parent);
@@ -146,8 +145,7 @@ void tocTreeModel::setupModelData(fz_outline * outline, toc_item * parent) {
 
             parent->appendChild(temp_item);
 
-            if (o->down != nullptr)
-            {
+            if (o->down != nullptr) {
                 rec_outline(o->down, temp_item);
             }
         }

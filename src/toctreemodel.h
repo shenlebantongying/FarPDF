@@ -38,7 +38,7 @@ class tocTreeModel : public QAbstractItemModel {
     Q_OBJECT
 public:
     explicit tocTreeModel(fz_outline * outline, QObject * parent = nullptr);
-    ~tocTreeModel();
+    ~tocTreeModel() override;
 
     QVariant data(const QModelIndex & index, int role) const override;
 
@@ -52,7 +52,7 @@ public:
 
     int columnCount(const QModelIndex & parent = QModelIndex()) const override;
 
-    int page_num_from_index(const QModelIndex & index);
+    static int page_num_from_index(const QModelIndex & index);
 
     void update_outline(fz_outline * outline);
 

@@ -3,7 +3,9 @@
 #include <QFileDialog>
 #include <QLabel>
 
-farMainWindow::farMainWindow(QWidget * parent) {
+farMainWindow::farMainWindow(QWidget * parent)
+    : QMainWindow(parent) {
+
     // init code should not be related to specific doc,
     // set it to null to make sure the program will crash if some wrong code ever added;
     m_doc = nullptr;
@@ -121,8 +123,8 @@ void farMainWindow::load_document() {
     connect(tocView->selectionModel(),
             &QItemSelectionModel::currentChanged,
             // TODO: side effect -> open a doc will always end up in the 1st bookmark
-            [=, this](const QModelIndex & current, const QModelIndex & previous) {
-                jump_to_page(toc->page_num_from_index(current));
+            [=, this](const QModelIndex & current, const QModelIndex &  /*previous*/) {
+                jump_to_page(tocTreeModel::page_num_from_index(current));
             });
 }
 

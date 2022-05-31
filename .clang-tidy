@@ -1,0 +1,24 @@
+# https://clang.llvm.org/extra/clang-tidy/
+---
+Checks: >
+  bugprone-*,
+  clang-analyzer-*,
+  clang-diagnostic-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*'
+  -bugprone-easily-swappable-parameters,
+  -modernize-avoid-c-arrays,
+  -modernize-use-auto,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -misc-non-private-member-variables-in-classes,
+  -google-default-arguments
+CheckOptions:
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
+...
+
