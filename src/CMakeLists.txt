@@ -27,6 +27,9 @@ target_link_libraries(FarPDF PRIVATE
         Qt6::Widgets
         ${MUPDF_LIBRARIES})
 
+# ALL WARNING IS ERROR FOR GCC
+target_compile_options(FarPDF PRIVATE -Wall -Wextra -Werror)
+
 set_target_properties(FarPDF PROPERTIES
         MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}

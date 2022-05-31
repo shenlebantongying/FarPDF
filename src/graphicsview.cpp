@@ -72,19 +72,19 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
     qreal top = visable_rect.top();   // smaller value
     qreal bot = visable_rect.bottom();// bigger value
     int page_n_low;
-    unsigned long page_n_high;
+    int page_n_high;
 
     // from head to end, find the first that bigger than top
-    for (int i = 0; i < m_doc->page_acc_h.size(); ++i) {
+    for (auto i = 0u; i < m_doc->page_acc_h.size(); ++i) {
         if (top <= zoom_factor * m_doc->page_acc_h[i]) {
-            page_n_low = i - 1;
+            page_n_low = (int)i - 1;
             break;
         }
     }
 
-    for (unsigned long i = m_doc->page_acc_h.size() - 1; i >= 0; --i) {
+    for (auto i = m_doc->page_acc_h.size() - 1; i > 0; --i) {
         if (bot > zoom_factor * m_doc->page_acc_h[i]) {
-            page_n_high = i + 1;
+            page_n_high = (int)i + 1;
             break;
         }
     }
@@ -151,7 +151,7 @@ void GraphicsView::mousePressEvent(QMouseEvent * event) {
     select_rect->setVisible(true);
 }
 
-void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
+void GraphicsView::mouseReleaseEvent(QMouseEvent *) {
     select_rect->setVisible(false);
     select_rect->setPos(0, 0);
 
