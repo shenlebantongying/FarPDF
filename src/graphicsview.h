@@ -53,6 +53,7 @@ private:
     void mouseMoveEvent(QMouseEvent * event) override;
 
     void make_sure_pages();
+    void reset();
 };
 
 #endif// GRAPHICSVIEW_H

@@ -9,7 +9,7 @@ document::document(const std::string & path) {
         m_doc = fz_open_document(ctx, path.c_str());
     }
     fz_catch(ctx) {
-        qDebug() << fz_caught_message(ctx);
+        qFatal("%s", fz_caught_message(ctx));
     }
 
     pageCount = fz_count_pages(ctx, m_doc);
@@ -53,9 +53,6 @@ document::~document() {
     fz_drop_context(ctx);
 }
 int document::highlight_selection(int page_num, QPointF pointA, QPointF pointB, QList<QRectF> & hl_quads) {
-    qDebug() << "input points" << pointA << pointB;
-    qDebug() << "converted points" << QPointF_to_fz_point(pointA).x << QPointF_to_fz_point(pointB).x;
-    qDebug() << "converted points" << QPointF_to_fz_point(pointA).y << QPointF_to_fz_point(pointB).y;
 
     auto temp_stext_page = fz_new_stext_page_from_page(ctx, pages[page_num], nullptr);
 

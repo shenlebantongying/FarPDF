@@ -6,8 +6,6 @@
 GraphicsView::GraphicsView() {
     m_doc = nullptr;
     scene = new QGraphicsScene();
-    select_group = new QGraphicsItemGroup();
-    select_group->setZValue(90);
 
     // This enable mouse selection
     setMouseTracking(true);
@@ -16,10 +14,6 @@ GraphicsView::GraphicsView() {
 
     setScene(scene);
 
-    // select_rect rectangle
-    select_rect = new QGraphicsPolygonItem();
-    select_rect->setVisible(false);
-    select_rect->setZValue(100);
 
     // The middle point of 1st page's boundary is (0,0)
     setAlignment(Qt::AlignTop);
@@ -31,19 +25,18 @@ GraphicsView::GraphicsView() {
                 this->make_sure_pages();
                 emit page_updated();
             });
+
+    reset();
 }
 
 void GraphicsView::update_doc(document * doc_) {
     m_doc = doc_;
-    scene->clear();
-    live_pages.clear();
+
+    reset();
 
     // TODO: temporal hack, just get first page's width and consider it the whole doc.
     addPage(0);
     scene->setSceneRect(0, 0, scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
-
-    scene->addItem(select_group);
-    scene->addItem(select_rect);
 
     make_sure_pages();
 }
@@ -131,8 +124,8 @@ int GraphicsView::get_middle_page_num() {
 void GraphicsView::zoom_to(float factor) {
     zoom_factor = factor;
 
-    scene->clear();
-    live_pages.clear();
+    reset();
+
     addPage(0);
 
     scene->setSceneRect(0, 0, zoom_factor * scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
@@ -172,16 +165,15 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
         float y_off = m_doc->page_acc_h[it->page_num];
         auto hls = new QList<QRectF>();
 
-        ;
 
         m_doc->highlight_selection(it->page_num,
-                                   QPointF(c_rect.topLeft().x(), c_rect.topLeft().y() - y_off),
-                                   QPointF(c_rect.bottomRight().x(), c_rect.bottomRight().y() - y_off),
+                                   QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off),
+                                   QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off),
                                    *hls);
 
         for (auto r: *hls) {
-            auto temp_rect = new QGraphicsRectItem(r.x(), r.y() + y_off, r.width(), r.height());
-            qDebug() << "r from hls" << r;
+            auto temp_rect = new QGraphicsRectItem(r.x() * zoom_factor, zoom_factor * (r.y() + y_off),
+                                                   r.width() * zoom_factor, r.height() * zoom_factor);
             select_group->addToGroup(temp_rect);
         }
     }
@@ -207,4 +199,22 @@ void GraphicsView::mouseMoveEvent(QMouseEvent * event) {
             select_rect->setPolygon(mapToScene(QRect(dragEnd_P.x(), dragEnd_P.y(), width, height)));
         }
     }
+}
+
+void GraphicsView::reset() {
+    scene->clear();
+    live_pages.clear();
+
+
+    // selection highlights
+    select_group = new QGraphicsItemGroup();
+    select_group->setZValue(90);
+    scene->addItem(select_group);
+
+
+    // select_rect rectangle
+    select_rect = new QGraphicsPolygonItem();
+    select_rect->setVisible(false);
+    select_rect->setZValue(100);
+    scene->addItem(select_rect);
 }
