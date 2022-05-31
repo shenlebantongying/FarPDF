@@ -13,7 +13,6 @@ farMainWindow::farMainWindow(QWidget * parent)
     resize(1024, 800);
 
     view = new GraphicsView();
-    setCentralWidget(view);
 
     //-- Table of contents -----------------------------------------------------------
 
@@ -114,6 +113,10 @@ void farMainWindow::load_document() {
 
     view->update_doc(m_doc);
 
+    if (centralWidget() == nullptr) {
+        setCentralWidget(view);
+    }
+
     delete toc;
     toc = new tocTreeModel(m_doc->get_outline());
 
@@ -123,7 +126,7 @@ void farMainWindow::load_document() {
     connect(tocView->selectionModel(),
             &QItemSelectionModel::currentChanged,
             // TODO: side effect -> open a doc will always end up in the 1st bookmark
-            [=, this](const QModelIndex & current, const QModelIndex &  /*previous*/) {
+            [=, this](const QModelIndex & current, const QModelIndex & /*previous*/) {
                 jump_to_page(tocTreeModel::page_num_from_index(current));
             });
 }
