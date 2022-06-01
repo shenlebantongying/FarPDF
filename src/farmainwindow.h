@@ -1,6 +1,7 @@
 #ifndef FARMAINWINDOW_H
 #define FARMAINWINDOW_H
 
+#include <QComboBox>
 #include <QDockWidget>
 #include <QMainWindow>
 #include <QToolBar>
@@ -21,6 +22,9 @@ private:
     document * m_doc;
     GraphicsView * view;
 
+    QList<float> zoom_leveler;
+    QComboBox * zoom_switcher;
+
     QDockWidget * toc_dock;
     tocTreeModel * toc;
     QTreeView * tocView;
@@ -31,6 +35,16 @@ private:
 
     void load_document();
     void show_metadata_dialog();
+
+
+    /**
+     * @brief Change view's zooming factor
+     * @param factor
+     */
+    void zoom_switch(float factor);
+
+    void zoom_up();
+    void zoom_down();
 };
 
 #endif// FARMAINWINDOW_H

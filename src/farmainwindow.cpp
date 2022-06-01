@@ -1,7 +1,8 @@
 #include "farmainwindow.h"
-#include <QComboBox>
 #include <QFileDialog>
 #include <QLabel>
+#include <QShortcut>
+#include <array>
 
 farMainWindow::farMainWindow(QWidget * parent)
     : QMainWindow(parent) {
@@ -75,14 +76,12 @@ farMainWindow::farMainWindow(QWidget * parent)
             });
 
     // Zoom switcher
-    auto zoom_switcher = new QComboBox(this);
-    zoom_switcher->addItem(" 50%", 0.5);
-    zoom_switcher->addItem(" 75%", 0.75);
-    zoom_switcher->addItem("100%", 1.0);
-    zoom_switcher->addItem("110%", 1.1);
-    zoom_switcher->addItem("125%", 1.25);
-    zoom_switcher->addItem("150%", 1.5);
-    zoom_switcher->addItem("200%", 2.0);
+    zoom_switcher = new QComboBox();
+    zoom_leveler = {3.0, 2.75, 2.50, 2.25, 2.0, 1.75, 1.50, 1.40, 1.30, 1.20, 1.10, 1.0, 0.9, 0.75, 0.5};
+    for (auto x: zoom_leveler) {
+        zoom_switcher->addItem(QString::number(x * 100) + "%", x);
+    }
+
     zoom_switcher->setCurrentText("100%");
 
     toolbar->addWidget(zoom_switcher);
@@ -93,6 +92,37 @@ farMainWindow::farMainWindow(QWidget * parent)
                     view->zoom_to(zoom_switcher->currentData().toFloat());
                 }
             });
+
+    auto zoom_up = new QShortcut(QKeySequence(QKeySequence::ZoomOut), this);
+    auto zoom_down = new QShortcut(QKeySequence(QKeySequence::ZoomIn), this);
+
+    connect(zoom_up, &QShortcut::activated,
+            [=, this] {
+                this->zoom_up();
+            });
+    connect(zoom_down, &QShortcut::activated,
+            [=, this] {
+                this->zoom_down();
+            });
+}
+
+void farMainWindow::zoom_switch(float factor) {
+    view->zoom_to(factor);
+};
+
+void farMainWindow::zoom_up() {
+    qDebug() << "hello up";
+    auto new_index = -1 + zoom_switcher->currentIndex();
+    if (new_index >= 0) {
+        zoom_switcher->setCurrentIndex(new_index);
+    }
+}
+
+void farMainWindow::zoom_down() {
+    auto new_index = 1 + zoom_switcher->currentIndex();
+    if (new_index < zoom_switcher->count()) {
+        zoom_switcher->setCurrentIndex(new_index);
+    }
 }
 
 void farMainWindow::jump_to_page(int n) {
