@@ -108,8 +108,8 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
 
     qreal top = visable_rect.top();   // smaller value
     qreal bot = visable_rect.bottom();// bigger value
-    int page_n_low;
-    int page_n_high;
+    int page_n_low = 0;
+    int page_n_high = 0;
 
     // from head to end, find the first that bigger than top
     for (auto i = 0u; i < m_doc->page_acc_h.size(); ++i) {

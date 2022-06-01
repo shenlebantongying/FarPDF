@@ -2,7 +2,7 @@
 Terminal=false
 Name=FarViewer
 GenericName=Document Viewer
-Exec=FarPDF %U
+Exec=FarPDF %u
 Icon=application-pdf
 Type=Application
 InitialPreference=7

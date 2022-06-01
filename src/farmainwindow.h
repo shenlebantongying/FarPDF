@@ -16,6 +16,8 @@ class farMainWindow : public QMainWindow {
 public:
     explicit farMainWindow(QWidget * parent = nullptr);
 
+    void load_document_from_path(const QString & filename);
+
 signals:
 
 private:

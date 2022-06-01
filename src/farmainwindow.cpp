@@ -134,6 +134,10 @@ void farMainWindow::load_document() {
                                                      "Open File",
                                                      QDir::homePath(),
                                                      "Documents (*.pdf)");
+    load_document_from_path(file_name);
+}
+
+void farMainWindow::load_document_from_path(const QString & file_name) {
     if (file_name.isEmpty() or file_name.isNull()) {
         return;
     }
