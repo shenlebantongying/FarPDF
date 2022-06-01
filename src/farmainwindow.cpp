@@ -1,6 +1,8 @@
 #include "farmainwindow.h"
+#include <QCoreApplication>
 #include <QFileDialog>
 #include <QLabel>
+#include <QResizeEvent>
 #include <QShortcut>
 #include <array>
 
@@ -98,6 +100,8 @@ farMainWindow::farMainWindow(QWidget * parent)
                     }
                 } else {
                     view->fit_to_width_q = true;
+                    // manually trigger reisze event
+                    emit view->resizeEvent(new QResizeEvent(view->size(), view->size()));
                 };
             });
 
