@@ -89,14 +89,22 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
         }
     }
 
-    // Guard to prevent requesting more pages than reality.
+    // Guards to prevent requesting more pages than reality.
+
+    if (page_n_low == page_n_high) {
+        page_n_high += 1;
+        page_n_low -= 1;
+    }
+
     if (page_n_high > m_doc->pageCount) {
         page_n_high = m_doc->pageCount;
     }
 
     if (page_n_low < 0) {
-        page_n_high = 0;
+        page_n_low = 0;
     }
+
+    //
 
     std::vector<int> v(page_n_high - page_n_low);
     std::iota(std::begin(v), std::end(v), page_n_low);
@@ -160,7 +168,8 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *) {
     QRectF c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
 
-    if (itemAt(dragBeg_P) == itemAt(dragEnd_P)) {
+    if (itemAt(dragBeg_P) == itemAt(dragEnd_P) && itemAt(dragBeg_P) != nullptr && itemAt(dragEnd_P) != nullptr) {
+
         auto it = dynamic_cast<GraphicsPageItem *>(itemAt(dragBeg_P));
         float y_off = m_doc->page_acc_h[it->page_num];
         auto hls = new QList<QRectF>();
