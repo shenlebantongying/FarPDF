@@ -3,6 +3,7 @@
 #include <QClipboard>
 #include <QGraphicsPixmapItem>
 #include <QMouseEvent>
+#include <QResizeEvent>
 #include <QScrollBar>
 #include <QShortcut>
 
@@ -17,6 +18,7 @@ GraphicsView::GraphicsView() {
 
     setScene(scene);
 
+    fit_to_width_q = false;
 
     // The middle point of 1st page's boundary is (0,0)
     setAlignment(Qt::AlignTop);
@@ -58,8 +60,6 @@ GraphicsView::GraphicsView() {
                 if (!(str.isEmpty() || str.isNull())) {
                     clip->setText(str);
                 }
-
-                ;
             });
 
 
@@ -73,7 +73,8 @@ void GraphicsView::update_doc(document * doc_) {
 
     // TODO: temporal hack, just get first page's width and consider it the whole doc.
     addPage(0);
-    scene->setSceneRect(0, 0, scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
+    raw_page_width = scene->itemsBoundingRect().width();
+    scene->setSceneRect(0, 0, raw_page_width, zoom_factor * m_doc->page_acc_h.back());
 
     make_sure_pages();
 }
@@ -263,4 +264,11 @@ void GraphicsView::reset() {
     select_rect->setVisible(false);
     select_rect->setZValue(100);
     scene->addItem(select_rect);
+}
+
+void GraphicsView::resizeEvent(QResizeEvent * event) {
+    if (fit_to_width_q) {
+        zoom_factor = (float)(event->size().width() / raw_page_width);
+        zoom_to(zoom_factor);
+    }
 }

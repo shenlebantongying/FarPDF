@@ -15,14 +15,20 @@ public:
     QGraphicsScene * scene;
     void update_doc(document * doc_);
 
+    bool fit_to_width_q;
+    qreal raw_page_width;
+
 
     int get_middle_page_num();
-    void zoom_to(float factor);
     void jump_to_page(int n);
-
+    void resizeEvent(QResizeEvent * event) override;
 
 signals:
     void page_updated();
+
+
+public slots:
+    void zoom_to(float factor);
 
 private:
     document * m_doc;

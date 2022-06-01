@@ -82,15 +82,23 @@ farMainWindow::farMainWindow(QWidget * parent)
         zoom_switcher->addItem(QString::number(x * 100) + "%", x);
     }
 
+    zoom_switcher->addItem(QString("Fit to width"), "fit_to_width");
+
     zoom_switcher->setCurrentText("100%");
 
     toolbar->addWidget(zoom_switcher);
 
     connect(zoom_switcher, &QComboBox::currentIndexChanged,
             [=, this] {
-                if (m_doc != nullptr) {
-                    view->zoom_to(zoom_switcher->currentData().toFloat());
-                }
+                const std::string t_float("float");
+                if (zoom_switcher->currentData().typeName() == t_float) {
+                    if (m_doc != nullptr) {
+                        view->fit_to_width_q = false;
+                        view->zoom_to(zoom_switcher->currentData().toFloat());
+                    }
+                } else {
+                    view->fit_to_width_q = true;
+                };
             });
 
     auto zoom_up = new QShortcut(QKeySequence(QKeySequence::ZoomOut), this);
