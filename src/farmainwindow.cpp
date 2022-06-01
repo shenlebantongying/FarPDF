@@ -1,9 +1,11 @@
 #include "farmainwindow.h"
+
 #include <QCoreApplication>
 #include <QFileDialog>
 #include <QLabel>
 #include <QResizeEvent>
 #include <QShortcut>
+#include <QSizePolicy>
 #include <array>
 
 farMainWindow::farMainWindow(QWidget * parent)
@@ -53,7 +55,6 @@ farMainWindow::farMainWindow(QWidget * parent)
         load_document();
     });
 
-    toolbar->addAction(openAct);
 
     // MetaData Dialog
     auto * infoAct = new QAction(QIcon::fromTheme("documentinfo"), tr("&Open..."), this);
@@ -62,19 +63,15 @@ farMainWindow::farMainWindow(QWidget * parent)
         show_metadata_dialog();
     });
 
-    toolbar->addAction(infoAct);
-
 
     // Page Indicator
     auto page_indicator = new QLabel("0", this);
-    toolbar->addSeparator();
-    toolbar->addWidget(page_indicator);
     page_indicator->setMinimumWidth(20);
     page_indicator->setAlignment(Qt::AlignCenter);
 
     connect(view, &GraphicsView::page_updated,
             [=, this] {
-                page_indicator->setNum(view->get_middle_page_num());
+                page_indicator->setText(QString::number(view->get_middle_page_num()) + "/" + QString::number(m_doc->pageCount) + " ");
             });
 
     // Zoom switcher
@@ -88,7 +85,6 @@ farMainWindow::farMainWindow(QWidget * parent)
 
     zoom_switcher->setCurrentText("100%");
 
-    toolbar->addWidget(zoom_switcher);
 
     connect(zoom_switcher, &QComboBox::currentIndexChanged,
             [=, this] {
@@ -116,6 +112,17 @@ farMainWindow::farMainWindow(QWidget * parent)
             [=, this] {
                 this->zoom_down();
             });
+
+    // Centralized place to make toolbar
+    toolbar->addAction(openAct);
+    toolbar->addAction(infoAct);
+
+    auto blank_splitter = new QWidget(this);
+    blank_splitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    toolbar->addWidget(blank_splitter);
+
+    toolbar->addWidget(page_indicator);
+    toolbar->addWidget(zoom_switcher);
 }
 
 void farMainWindow::zoom_switch(float factor) {
@@ -150,6 +157,9 @@ void farMainWindow::load_document() {
 }
 
 void farMainWindow::load_document_from_path(const QString & file_name) {
+
+    setWindowTitle(file_name);
+
     if (file_name.isEmpty() or file_name.isNull()) {
         return;
     }
@@ -167,6 +177,8 @@ void farMainWindow::load_document_from_path(const QString & file_name) {
 
     tocView->setModel(toc);
     toc_dock->show();
+    toc_dock->setMinimumWidth(100);
+    toc_dock->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
     connect(tocView->selectionModel(),
             &QItemSelectionModel::currentChanged,
@@ -178,7 +190,10 @@ void farMainWindow::load_document_from_path(const QString & file_name) {
 
 void farMainWindow::show_metadata_dialog() {
     if (m_doc) {
-        auto metaDialog = new QLabel();
+        // Note: Qt::Tool + parent set properly = always on top of the parent.
+        auto metaDialog = new QLabel(this);
+        metaDialog->setWindowFlags(Qt::Tool);
+
         metaDialog->setTextInteractionFlags(Qt::TextSelectableByMouse);
         metaDialog->setMargin(10);
         metaDialog->setText(QString::fromStdString(m_doc->get_metadata_string()));
