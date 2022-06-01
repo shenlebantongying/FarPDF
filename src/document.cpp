@@ -74,6 +74,13 @@ int document::highlight_selection(int page_num, QPointF pointA, QPointF pointB, 
     return n_of_quads;
 }
 
+QString document::get_selection_text(int page_num, QPointF pointA, QPointF pointB) {
+    auto temp_stext_page = fz_new_stext_page_from_page(ctx, pages[page_num], nullptr);
+    auto x = QString(fz_copy_selection(ctx, temp_stext_page, QPointF_to_fz_point(pointA), QPointF_to_fz_point(pointB), 0));
+    fz_drop_stext_page(ctx, temp_stext_page);
+    return x;
+}
+
 fz_point document::QPointF_to_fz_point(QPointF p) {
     return fz_make_point((float)p.x(), (float)p.y());
 }

@@ -1,7 +1,10 @@
 #include "graphicsview.h"
+#include <QApplication>
+#include <QClipboard>
 #include <QGraphicsPixmapItem>
 #include <QMouseEvent>
 #include <QScrollBar>
+#include <QShortcut>
 
 GraphicsView::GraphicsView() {
     m_doc = nullptr;
@@ -19,12 +22,46 @@ GraphicsView::GraphicsView() {
     setAlignment(Qt::AlignTop);
 
     scene->setBackgroundBrush(Qt::lightGray);
+
     connect(this->verticalScrollBar(),
             &QScrollBar::valueChanged,
             [=, this] {
                 this->make_sure_pages();
                 emit page_updated();
             });
+
+    QClipboard * clip = QApplication::clipboard();
+
+    auto copy = new QShortcut(QKeySequence(QKeySequence::Copy), this);
+    connect(copy, &QShortcut::activated,
+            [=, this] {
+                auto c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
+
+
+                /// TODO: convert "obtain page_num by height" to a func
+
+                auto normalized_h = (float)c_rect.y() * zoom_factor;
+                auto index_it = std::find_if(m_doc->page_acc_h.begin(), m_doc->page_acc_h.end(),
+                                             [normalized_h](float n) {
+                                                 return (n > normalized_h);
+                                             });
+
+                auto page_num = -1 + index_it - m_doc->page_acc_h.begin();
+
+
+                float y_off = m_doc->page_acc_h[page_num];
+
+                auto str = m_doc->get_selection_text((int)page_num,
+                                                     QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off),
+                                                     QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off));
+
+                if (!(str.isEmpty() || str.isNull())) {
+                    clip->setText(str);
+                }
+
+                ;
+            });
+
 
     reset();
 }

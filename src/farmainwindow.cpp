@@ -111,7 +111,6 @@ void farMainWindow::zoom_switch(float factor) {
 };
 
 void farMainWindow::zoom_up() {
-    qDebug() << "hello up";
     auto new_index = -1 + zoom_switcher->currentIndex();
     if (new_index >= 0) {
         zoom_switcher->setCurrentIndex(new_index);

@@ -47,6 +47,7 @@ public:
      * @return Number of quads
      */
     int highlight_selection(int page_num, QPointF pointA, QPointF pointB, QList<QRectF> & hl_quads);
+    QString get_selection_text(int page_num, QPointF pointA, QPointF pointB);
 
     std::string get_metadata_string();
 
