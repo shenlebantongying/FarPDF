@@ -207,10 +207,11 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *) {
 
     // TODO: this is buggy and only works on single page
 
-    QRectF c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
 
     if (itemAt(dragBeg_P) == itemAt(dragEnd_P) && itemAt(dragBeg_P) != nullptr && itemAt(dragEnd_P) != nullptr) {
+
+        QRectF c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
         auto it = dynamic_cast<GraphicsPageItem *>(itemAt(dragBeg_P));
         float y_off = m_doc->page_acc_h[it->page_num];

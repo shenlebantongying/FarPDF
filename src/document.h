@@ -46,8 +46,8 @@ public:
      * @param hl_quads Constructed by caller, and modify it directly.
      * @return Number of quads
      */
-    int highlight_selection(int page_num, QPointF pointA, QPointF pointB, QList<QRectF> & hl_quads);
-    QString get_selection_text(int page_num, QPointF pointA, QPointF pointB);
+    int highlight_selection(int page_num, const QPointF & pointA, const QPointF & pointB, QList<QRectF> & hl_quads);
+    QString get_selection_text(int page_num, const QPointF & pointA, const QPointF & pointB);
 
     std::string get_metadata_string();
 
@@ -55,8 +55,8 @@ private:
     fz_context * ctx;
 
     // Utils
-    static fz_point QPointF_to_fz_point(QPointF p);
-    static QRectF fz_quad_to_QRectF(fz_quad q);
+    static fz_point QPointF_to_fz_point(const QPointF & p);
+    static QRectF fz_quad_to_QRectF(const fz_quad & q);
 };
 
 #endif// DOC_H
