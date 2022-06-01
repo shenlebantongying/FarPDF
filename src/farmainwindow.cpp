@@ -1,8 +1,14 @@
 #include "farmainwindow.h"
+#include <QApplication>
 #include <QFileDialog>
+#include <QHoverEvent>
 #include <QLabel>
 #include <QShortcut>
+#include <QSizePolicy>
 #include <array>
+
+constexpr qreal border = 15;
+constexpr int w = 2;
 
 farMainWindow::farMainWindow(QWidget * parent)
     : QMainWindow(parent) {
@@ -10,6 +16,13 @@ farMainWindow::farMainWindow(QWidget * parent)
     // init code should not be related to specific doc,
     // set it to null to make sure the program will crash if some wrong code ever added;
     m_doc = nullptr;
+
+    // CSD_BEGIN
+    setWindowFlag(Qt::FramelessWindowHint);
+    setContentsMargins(w, w, w, w);
+    // Enable hove move event -> to change cursor when near window boarder.
+    setAttribute(Qt::WA_Hover);
+    // CSD_END
 
     resize(1024, 800);
 
@@ -35,11 +48,40 @@ farMainWindow::farMainWindow(QWidget * parent)
 
     //-- Main Toolbar -----------------------------------------------------------------
 
-    toolbar = new QToolBar();
-    toolbar->setMovable(false);
-    toolbar->setFloatable(false);
-    toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
-    this->addToolBar(toolbar);
+    headbar = new HeadBar();
+
+    // if the headbar request win_move (which will be emitted by mouse click event)
+    connect(headbar, &HeadBar::request_move_window,
+            [=, this] {
+                this->windowHandle()->startSystemMove();
+            });
+
+    // close, fullscreen, and close
+
+    auto close_ac = headbar->addToolBtn(new QAction(QIcon::fromTheme("window-close"), "Close"));
+    connect(close_ac, &QAction::triggered,
+            [=, this]() {
+                QApplication::quit();
+            });
+
+    auto fullscreen_ac = headbar->addToolBtn(new QAction(QIcon::fromTheme("window-maximize"), ("fullscreen")));
+    connect(fullscreen_ac, &QAction::triggered,
+            [=, this] {
+                if (windowState() == Qt::WindowMaximized) {
+                    setWindowState(Qt::WindowNoState);
+                } else {
+                    setWindowState(Qt::WindowMaximized);
+                }
+            });
+
+    auto minimize_ac = headbar->addToolBtn(new QAction(QIcon::fromTheme("window-minimize"), "Minimize"));
+    connect(minimize_ac, &QAction::triggered,
+            [=, this]() {
+                setWindowState(Qt::WindowMinimized);
+            });
+
+
+    this->addToolBar(headbar);
 
     // Open button
     const QIcon openIcon = QIcon::fromTheme("document-open");
@@ -51,7 +93,17 @@ farMainWindow::farMainWindow(QWidget * parent)
         load_document();
     });
 
-    toolbar->addAction(openAct);
+    headbar->addAction(openAct);
+
+    auto blank_separator = new QWidget();
+    blank_separator->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    headbar->addWidget(blank_separator);
+
+    // Page Indicator
+    auto page_indicator = new QLabel("0", this);
+    headbar->addWidget(page_indicator);
+    page_indicator->setMinimumWidth(20);
+    page_indicator->setAlignment(Qt::AlignCenter);
 
     // MetaData Dialog
     auto * infoAct = new QAction(QIcon::fromTheme("documentinfo"), tr("&Open..."), this);
@@ -60,15 +112,7 @@ farMainWindow::farMainWindow(QWidget * parent)
         show_metadata_dialog();
     });
 
-    toolbar->addAction(infoAct);
-
-
-    // Page Indicator
-    auto page_indicator = new QLabel("0", this);
-    toolbar->addSeparator();
-    toolbar->addWidget(page_indicator);
-    page_indicator->setMinimumWidth(20);
-    page_indicator->setAlignment(Qt::AlignCenter);
+    headbar->addAction(infoAct);
 
     connect(view, &GraphicsView::page_updated,
             [=, this] {
@@ -84,7 +128,7 @@ farMainWindow::farMainWindow(QWidget * parent)
 
     zoom_switcher->setCurrentText("100%");
 
-    toolbar->addWidget(zoom_switcher);
+    headbar->addWidget(zoom_switcher);
 
     connect(zoom_switcher, &QComboBox::currentIndexChanged,
             [=, this] {
@@ -173,4 +217,60 @@ void farMainWindow::show_metadata_dialog() {
         metaDialog->setAttribute(Qt::WA_DeleteOnClose);
         metaDialog->show();
     }
+}
+
+
+bool farMainWindow::event(QEvent * event) {
+
+    // When hove to edge, change cursor
+    if (event->type() == QEvent::HoverMove) {
+        auto p = dynamic_cast<QHoverEvent *>(event)->position();
+
+        if (p.y() > height() - border) {
+            if (p.x() < border) {
+                this->setCursor(Qt::SizeBDiagCursor);
+            } else if (p.x() > width() - border) {
+                this->setCursor(Qt::SizeFDiagCursor);
+            } else {
+                this->setCursor(Qt::SizeVerCursor);
+            }
+        } else if ((p.y() > headbar->height()) and
+                   (((p.x() > width() - border) or (p.x() < border)))) {
+            this->setCursor(Qt::SizeHorCursor);
+        } else {
+            setCursor(Qt::ArrowCursor);
+        }
+        // if user press
+    } else if (event->type() == QEvent::MouseButtonPress) {
+        auto p = dynamic_cast<QMouseEvent *>(event)->position();
+        Qt::Edges edges;
+        if (p.x() > width() - border) {
+            edges |= Qt::RightEdge;
+        }
+        if (p.x() < border) {
+            edges |= Qt::LeftEdge;
+        }
+        if (p.y() > height() - border) {
+            edges |= Qt::BottomEdge;
+        }
+        if (p.y() < border) {
+            edges |= Qt::TopEdge;
+        }
+
+        if (edges != 0) {
+            // Note: on Mac, this will return false which means isn't supported.
+            this->windowHandle()->startSystemResize(edges);
+        }
+    }
+    // TODO: what does this mean?
+    return QMainWindow::event(event);
+}
+
+void farMainWindow::paintEvent(QPaintEvent *) {
+    auto pen = new QPen();
+    pen->setWidth(w * 2);
+    pen->setColor(Qt::lightGray);
+    QPainter p(this);
+    p.setPen(*pen);
+    p.drawRect(this->rect());
 }

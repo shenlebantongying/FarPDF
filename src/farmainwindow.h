@@ -7,6 +7,7 @@
 #include <QToolBar>
 #include <QTreeView>
 
+#include "HeadBar.h"
 #include "document.h"
 #include "graphicsview.h"
 #include "toctreemodel.h"
@@ -17,6 +18,9 @@ public:
     explicit farMainWindow(QWidget * parent = nullptr);
 
     void load_document_from_path(const QString & filename);
+
+    bool event(QEvent * event) override;
+    void paintEvent(QPaintEvent * event) override;
 
 signals:
 
@@ -31,7 +35,7 @@ private:
     tocTreeModel * toc;
     QTreeView * tocView;
 
-    QToolBar * toolbar;
+    HeadBar * headbar;
 
     void jump_to_page(int n);
 
