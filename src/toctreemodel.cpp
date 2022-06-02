@@ -1,4 +1,5 @@
 #include "toctreemodel.h"
+#include <QColor>
 
 toc_item::toc_item(const QList<QVariant> & data, toc_item * parentItem)
     : m_itemData(data),
@@ -41,9 +42,13 @@ int toc_item::row() const {
 
 toc_item::~toc_item() = default;
 
+constexpr int n_of_history = 7;
+
 tocTreeModel::tocTreeModel(fz_outline * outline, QObject * parent)
     : QAbstractItemModel(parent) {
     update_outline(outline);
+    user_toc_jumping_history = QQueue<QString>();
+    user_toc_jumping_history.fill("", n_of_history);
 }
 
 void tocTreeModel::update_outline(fz_outline * outline) {
@@ -59,18 +64,41 @@ int tocTreeModel::columnCount(const QModelIndex & parent) const {
     return rootItem->columnCount();
 }
 
+
 // TODO: exactly where this is used?
 QVariant tocTreeModel::data(const QModelIndex & index, int role) const {
     if (!index.isValid())
         return {};
 
-    if (role != Qt::DisplayRole)
-        return {};
-
     toc_item * i = static_cast<toc_item *>(index.internalPointer());
 
-    return i->data(index.column());
+    if (role == Qt::DisplayRole) {
+        return i->data(index.column());
+    };
+
+    if (Qt::BackgroundRole == role) {
+        auto cur_data = i->m_itemData[0].toString();// TODO: m_itemData doesn't necessary to be a QList;
+        auto rank = (int)user_toc_jumping_history.indexOf(cur_data) + 1;
+        auto slice = 255 / n_of_history;
+        if (0 != rank) {
+            qDebug() << n_of_history + 2 << rank << (n_of_history + 2 - rank) << (255 / (n_of_history + 2 - rank));
+            return QVariant(QColor(202, 114, 247, slice * rank));// Note: rank is 0-based
+        };
+    }
+
+    return {};
 }
+
+void tocTreeModel::add_user_toc_jumping_history(const QString & data) {
+    // check if data already exist in history, if yes, remove it.
+    user_toc_jumping_history.removeOne(data);
+
+    if (user_toc_jumping_history.size() > n_of_history) {
+        user_toc_jumping_history.dequeue();
+    }
+
+    user_toc_jumping_history.enqueue(data);
+};
 
 int tocTreeModel::page_num_from_index(const QModelIndex & index) {
     if (!index.isValid())

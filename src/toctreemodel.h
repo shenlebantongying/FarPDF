@@ -2,6 +2,7 @@
 #define TOCTREEMODEL_H
 
 #include <QAbstractItemModel>
+#include <QQueue>
 #include <mupdf/fitz/outline.h>
 
 class toc_item {
@@ -56,8 +57,17 @@ public:
 
     void update_outline(fz_outline * outline);
 
+    /**
+     * @brief Add a toc title to user_toc_jumping_history which will later used to decide row color;
+     * @param data <- via something like index.data()
+     */
+    void add_user_toc_jumping_history(const QString & data);
+
+
 private:
     static void setupModelData(fz_outline * outline, toc_item * parent);
+
+    QQueue<QString> user_toc_jumping_history;
 
     toc_item * rootItem;
 };

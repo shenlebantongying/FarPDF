@@ -3,7 +3,6 @@
 #include <QClipboard>
 #include <QGraphicsPixmapItem>
 #include <QMouseEvent>
-#include <QResizeEvent>
 #include <QScrollBar>
 #include <QShortcut>
 
