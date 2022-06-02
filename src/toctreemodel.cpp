@@ -78,11 +78,10 @@ QVariant tocTreeModel::data(const QModelIndex & index, int role) const {
 
     if (Qt::BackgroundRole == role) {
         auto cur_data = i->m_itemData[0].toString();// TODO: m_itemData doesn't necessary to be a QList;
-        auto rank = (int)user_toc_jumping_history.indexOf(cur_data) + 1;
+        auto rank = (int)user_toc_jumping_history.indexOf(cur_data);
         auto slice = 255 / n_of_history;
-        if (0 != rank) {
-            qDebug() << n_of_history + 2 << rank << (n_of_history + 2 - rank) << (255 / (n_of_history + 2 - rank));
-            return QVariant(QColor(202, 114, 247, slice * rank));// Note: rank is 0-based
+        if (-1 != rank) {
+            return QVariant(QColor(61, 174, 233, slice * rank));// Note: rank is 0-based
         };
     }
 
