@@ -110,3 +110,8 @@ std::string document::get_metadata_string() {
 
     return result.str();
 }
+
+float document::get_page_height(int page_num) {
+    auto b = fz_bound_page(ctx, pages[page_num]);
+    return b.y1 - b.y0;
+}

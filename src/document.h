@@ -51,6 +51,8 @@ public:
 
     std::string get_metadata_string();
 
+    float get_page_height(int page_num);
+
 private:
     fz_context * ctx;
 

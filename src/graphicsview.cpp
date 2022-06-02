@@ -182,8 +182,9 @@ void GraphicsView::zoom_to(float factor) {
     make_sure_pages();
 }
 
-void GraphicsView::jump_to_page(int n) {
-    centerOn(0, zoom_factor * (m_doc->page_acc_h.at(n + 1) + m_doc->page_acc_h.at(n)) / 2.0);
+void GraphicsView::jump_to_page(int user_facing_page_number /* aka 1-based page numbering*/) {
+    centerOn(0, zoom_factor * (m_doc->page_acc_h.at(user_facing_page_number - 1) +
+                               (m_doc->get_page_height(user_facing_page_number - 1)) / 2.0));
 }
 
 // -------------------------------------------------------
@@ -206,7 +207,6 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *) {
     select_rect->setPos(0, 0);
 
     // TODO: this is buggy and only works on single page
-
 
 
     if (itemAt(dragBeg_P) == itemAt(dragEnd_P) && itemAt(dragBeg_P) != nullptr && itemAt(dragEnd_P) != nullptr) {

@@ -20,7 +20,7 @@ public:
 
 
     int get_middle_page_num();
-    void jump_to_page(int n);
+    void jump_to_page(int user_facing_page_number);
     void resizeEvent(QResizeEvent * event) override;
 
 signals:
