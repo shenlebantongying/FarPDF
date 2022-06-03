@@ -101,6 +101,10 @@ std::string document::get_metadata_string() {
 
     fz_lookup_metadata(ctx, m_doc, FZ_META_INFO_TITLE, buf, sizeof buf);
     result << "Title: " << buf << std::endl;
+    fz_lookup_metadata(ctx, m_doc, FZ_META_FORMAT, buf, sizeof buf);
+    result << "Format: " << buf << std::endl;
+    fz_lookup_metadata(ctx, m_doc, FZ_META_INFO_AUTHOR, buf, sizeof buf);
+    result << "Author: " << buf << std::endl;
     fz_lookup_metadata(ctx, m_doc, FZ_META_INFO_CREATOR, buf, sizeof buf);
     result << "Creator: " << buf << std::endl;
     fz_lookup_metadata(ctx, m_doc, FZ_META_INFO_PRODUCER, buf, sizeof buf);

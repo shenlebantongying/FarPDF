@@ -229,8 +229,7 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
                                    *hls);
 
         for (auto r: *hls) {
-            auto temp_rect = new QGraphicsRectItem(r.x() * zoom_factor, zoom_factor * (r.y() + y_off),
-                                                   r.width() * zoom_factor, r.height() * zoom_factor);
+            auto temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(r, it->page_num));
             select_group->addToGroup(temp_rect);
         }
     }
@@ -292,8 +291,7 @@ void GraphicsView::resizeEvent(QResizeEvent * event) {
 
 
 void GraphicsView::add_search_rect_at_page(QRectF rect, int page_num) {
-    auto temp_rect = new QGraphicsRectItem(zoom_factor * rect.x(), zoom_factor * (rect.y() + m_doc->page_acc_h[page_num]),
-                                           zoom_factor * rect.width(), zoom_factor * rect.height());
+    auto temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(rect, page_num));
     temp_rect->setBrush(QColor::fromRgb(0, 170, 255, 150));
 
     auto nopen = QPen();
@@ -308,4 +306,11 @@ void GraphicsView::clear_search_rect() {
         search_group->removeFromGroup(x);
         delete x;
     }
+}
+
+QRectF GraphicsView::zoomify_rect_to_page(const QRectF & rect, int page_num) {
+    return {zoom_factor * rect.x(),
+            zoom_factor * (rect.y() + m_doc->page_acc_h[page_num]),
+            zoom_factor * rect.width(),
+            zoom_factor * rect.height()};
 }

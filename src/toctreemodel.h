@@ -51,7 +51,7 @@ public:
 
     int rowCount(const QModelIndex & parent) const override;
 
-    int columnCount(const QModelIndex & parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex & parent) const override;
 
     static int page_num_from_index(const QModelIndex & index);
 

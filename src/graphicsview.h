@@ -65,6 +65,16 @@ private:
 
     void make_sure_pages();
     void reset();
+
+    // Helpers
+
+    /**
+     * @brief Zoomify for continuous scrolling.
+     * @param rect
+     * @param page_num
+     * @return
+     */
+    QRectF zoomify_rect_to_page(const QRectF & rect, int page_num);
 };
 
 #endif// GRAPHICSVIEW_H
