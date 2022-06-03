@@ -115,3 +115,13 @@ float document::get_page_height(int page_num) {
     auto b = fz_bound_page(ctx, pages[page_num]);
     return b.y1 - b.y0;
 }
+
+int document::query_needle_at(const std::string & needle, int page_num, QList<QRectF> & hl_quads) {
+    fz_quad hits[500];
+
+    auto n_of_quads = fz_search_page(ctx, pages[page_num], needle.c_str(), hits, nelem(hits));
+    for (int i = 0; i < n_of_quads; ++i) {
+        hl_quads.append(fz_quad_to_QRectF(hits[i]));
+    }
+    return n_of_quads;
+}

@@ -53,6 +53,15 @@ public:
 
     float get_page_height(int page_num);
 
+    /**
+     * @brief wrapper over fz_search_page_number to search on the exact page number.
+     * @param needle <- the search term
+     * @param page_num
+     * @param hl_quads Will be modified
+     * @return number of results.
+     */
+    int query_needle_at(const std::string & needle, int page_num, QList<QRectF> & hl_quads);
+
 private:
     fz_context * ctx;
 
