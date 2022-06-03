@@ -170,9 +170,11 @@ farMainWindow::farMainWindow(QWidget * parent)
     connect(term_inputer, &QLineEdit::editingFinished,
             [=, this] {
                 auto lol = new QList<QRectF>();
-                m_doc->query_needle_at(term_inputer->text().toStdString(), view->get_middle_page_num() - 1, *lol);
-                for (auto y: *lol) {
-                    view->add_search_rect_at_page(y, view->get_middle_page_num() - 1);
+                if (m_doc != nullptr) {
+                    m_doc->query_needle_at(term_inputer->text().toStdString(), view->get_middle_page_num() - 1, *lol);
+                    for (auto y: *lol) {
+                        view->add_search_rect_at_page(y, view->get_middle_page_num() - 1);
+                    }
                 }
             });
 
