@@ -122,8 +122,6 @@ float document::get_page_height(int page_num) {
 
 int document::query_needle_at(const std::string & needle, int page_num, QList<QRectF> & hl_quads) {
 
-    qDebug() << page_num << QString::fromStdString(needle);
-
     fz_quad hits[500];
 
     auto n_of_quads = fz_search_page(ctx, pages[page_num], needle.c_str(), hits, nelem(hits));

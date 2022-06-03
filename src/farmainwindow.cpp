@@ -160,17 +160,20 @@ farMainWindow::farMainWindow(QWidget * parent)
     search_btn->setMenu(search_menu);
     search_btn->setPopupMode(QToolButton::InstantPopup);
 
+    connect(search_menu, &QMenu::aboutToShow,
+            [=, this] {
+                term_inputer->setFocus();
+            });
+
     // Search related connections
 
     connect(term_inputer, &QLineEdit::editingFinished,
             [=, this] {
-                term_inputer->setFocus();
                 auto lol = new QList<QRectF>();
-                auto result_n = m_doc->query_needle_at(term_inputer->text().toStdString(), view->get_middle_page_num() - 1, *lol);
+                m_doc->query_needle_at(term_inputer->text().toStdString(), view->get_middle_page_num() - 1, *lol);
                 for (auto y: *lol) {
                     view->add_search_rect_at_page(y, view->get_middle_page_num() - 1);
                 }
-                qDebug() << result_n;
             });
 
     connect(clear_btn, &QPushButton::clicked,
@@ -178,7 +181,35 @@ farMainWindow::farMainWindow(QWidget * parent)
                 view->clear_search_rect();
             });
 
+    connect(foreward_btn, &QPushButton::clicked,
+            [=, this] {
+                auto lol = new QList<QRectF>();
 
+                for (int i = view->get_middle_page_num(); i < m_doc->pageCount; ++i) {
+                    if (0 < (m_doc->query_needle_at(term_inputer->text().toStdString(), i, *lol))) {
+                        view->jump_to_page(i + 1);
+                        for (auto y: *lol) {
+                            view->add_search_rect_at_page(y, i);
+                        }
+                        break;
+                    }
+                }
+            });
+
+    connect(backward_btn, &QPushButton::clicked,
+            [=, this] {
+                auto lol = new QList<QRectF>();
+
+                for (int i = view->get_middle_page_num() - 2; i > 0; --i) {
+                    if (0 < (m_doc->query_needle_at(term_inputer->text().toStdString(), i, *lol))) {
+                        view->jump_to_page(i + 1);
+                        for (auto y: *lol) {
+                            view->add_search_rect_at_page(y, i);
+                        }
+                        break;
+                    }
+                }
+            });
 
     // Centralized place to make toolbar
     toolbar->addAction(openAct);
