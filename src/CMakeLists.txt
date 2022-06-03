@@ -16,6 +16,7 @@ set(PROJECT_SOURCES
         graphicspageitem.h graphicspageitem.cpp
         graphicsview.h graphicsview.cpp
         toctreemodel.h toctreemodel.cpp
+        popupmenu.h popupmenu.cpp
         )
 
 qt_add_executable(FarPDF

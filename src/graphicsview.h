@@ -23,6 +23,10 @@ public:
     void jump_to_page(int user_facing_page_number);
     void resizeEvent(QResizeEvent * event) override;
 
+    void add_search_rect_at_page(QRectF rect, int page_num);
+    void clear_search_rect();
+
+
 signals:
     void page_updated();
 
@@ -39,6 +43,7 @@ private:
     QPoint dragEnd_P;
 
     QGraphicsItemGroup * select_group;
+    QGraphicsItemGroup * search_group;
 
     void addPage(int n);
 

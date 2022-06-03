@@ -259,9 +259,13 @@ void GraphicsView::reset() {
 
     // selection highlights
     select_group = new QGraphicsItemGroup();
-    select_group->setZValue(90);
-    scene->addItem(select_group);
+    search_group = new QGraphicsItemGroup();
 
+    select_group->setZValue(90);
+    search_group->setZValue(100);
+
+    scene->addItem(select_group);
+    scene->addItem(search_group);
 
     // select_rect rectangle
     select_rect = new QGraphicsPolygonItem();
@@ -278,4 +282,24 @@ void GraphicsView::resizeEvent(QResizeEvent * event) {
 
     // Note: werid hack, to make sure pages are always horizontally centered after zooming or window width change
     setSceneRect(0, 0, raw_page_width * zoom_factor, zoom_factor * m_doc->page_acc_h.back());
+}
+
+
+void GraphicsView::add_search_rect_at_page(QRectF rect, int page_num) {
+    auto temp_rect = new QGraphicsRectItem(zoom_factor * rect.x(), zoom_factor * (rect.y() + m_doc->page_acc_h[page_num]),
+                                           zoom_factor * rect.width(), zoom_factor * rect.height());
+    temp_rect->setBrush(QColor::fromRgb(0, 170, 255, 150));
+
+    auto nopen = QPen();
+    nopen.setWidth(0);
+
+    temp_rect->setPen(nopen);
+    search_group->addToGroup(temp_rect);
+}
+
+void GraphicsView::clear_search_rect() {
+    for (auto x: search_group->childItems()) {
+        search_group->removeFromGroup(x);
+        delete x;
+    }
 }

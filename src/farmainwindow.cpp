@@ -1,11 +1,20 @@
 #include "farmainwindow.h"
+#include "popupmenu.h"
 
 #include <QCoreApplication>
 #include <QFileDialog>
+#include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
+#include <QMenu>
+#include <QPlainTextEdit>
+#include <QPushButton>
 #include <QResizeEvent>
 #include <QShortcut>
 #include <QSizePolicy>
+#include <QToolButton>
+#include <QWidgetAction>
+
 #include <array>
 
 farMainWindow::farMainWindow(QWidget * parent)
@@ -113,6 +122,64 @@ farMainWindow::farMainWindow(QWidget * parent)
                 this->zoom_down();
             });
 
+    // Search Popup
+    // TODO: CLEAN THE SHIT BLOW
+
+    auto search_menu = new popupMenu(nullptr, this);
+    search_menu->setWindowModality(Qt::NonModal);
+
+    auto search_popup = new QWidgetAction(this);
+
+    auto term_inputer = new QLineEdit(this);
+    term_inputer->setFocusPolicy(Qt::StrongFocus);
+
+    auto foreward_btn = new QPushButton(this);
+    auto backward_btn = new QPushButton(this);
+    auto clear_btn = new QPushButton(this);
+
+    foreward_btn->setIcon(QIcon::fromTheme("arrow-down"));
+    backward_btn->setIcon(QIcon::fromTheme("arrow-up"));
+    clear_btn->setIcon(QIcon::fromTheme("edit-clear-all"));
+
+    auto search_layout = new QHBoxLayout();
+    search_layout->addWidget(foreward_btn);
+    search_layout->addWidget(backward_btn);
+    search_layout->addWidget(term_inputer);
+    search_layout->addWidget(clear_btn);
+
+    auto wrap_widget = new QWidget(this);
+    wrap_widget->setLayout(search_layout);
+
+    search_popup->setDefaultWidget(wrap_widget);
+
+    search_menu->addAction(search_popup);
+
+    auto search_btn = new QToolButton();
+
+    search_btn->setIcon(QIcon::fromTheme("search"));
+    search_btn->setMenu(search_menu);
+    search_btn->setPopupMode(QToolButton::InstantPopup);
+
+    // Search related connections
+
+    connect(term_inputer, &QLineEdit::editingFinished,
+            [=, this] {
+                term_inputer->setFocus();
+                auto lol = new QList<QRectF>();
+                auto result_n = m_doc->query_needle_at(term_inputer->text().toStdString(), view->get_middle_page_num() - 1, *lol);
+                for (auto y: *lol) {
+                    view->add_search_rect_at_page(y, view->get_middle_page_num() - 1);
+                }
+                qDebug() << result_n;
+            });
+
+    connect(clear_btn, &QPushButton::clicked,
+            [=, this] {
+                view->clear_search_rect();
+            });
+
+
+
     // Centralized place to make toolbar
     toolbar->addAction(openAct);
     toolbar->addAction(infoAct);
@@ -123,6 +190,8 @@ farMainWindow::farMainWindow(QWidget * parent)
 
     toolbar->addWidget(page_indicator);
     toolbar->addWidget(zoom_switcher);
+    // toolbar->addAction(search_popup);
+    toolbar->addWidget(search_btn);
 }
 
 void farMainWindow::zoom_switch(float factor) {
