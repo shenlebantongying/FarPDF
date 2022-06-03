@@ -201,7 +201,13 @@ void GraphicsView::mousePressEvent(QMouseEvent * event) {
     select_rect->setVisible(true);
 }
 
-void GraphicsView::mouseReleaseEvent(QMouseEvent *) {
+void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
+
+    // extra confirm that dragEnd will be captured
+    if (select_rect->isVisible()) {
+        dragEnd_P = event->pos();
+    }
+
     select_rect->setVisible(false);
     select_rect->setPos(0, 0);
 
