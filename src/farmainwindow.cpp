@@ -287,7 +287,7 @@ void farMainWindow::load_document_from_path(const QString & file_name) {
             // TODO: side effect -> open a doc will always end up in the 1st bookmark
             [=, this](const QModelIndex & current, const QModelIndex & /*previous*/) {
                 jump_to_page(tocTreeModel::page_num_from_index(current));
-                toc->add_user_toc_jumping_history(current.data().toString());
+                toc->add_user_toc_jumping_history(current);
                 emit toc->layoutChanged();
             });
 }

@@ -47,8 +47,8 @@ constexpr int n_of_history = 7;
 tocTreeModel::tocTreeModel(fz_outline * outline, QObject * parent)
     : QAbstractItemModel(parent) {
     update_outline(outline);
-    user_toc_jumping_history = QQueue<QString>();
-    user_toc_jumping_history.fill("", n_of_history);
+    user_toc_jumping_history = QQueue<QModelIndex>();
+    user_toc_jumping_history.fill(QModelIndex(), n_of_history);
 }
 
 void tocTreeModel::update_outline(fz_outline * outline) {
@@ -77,10 +77,9 @@ QVariant tocTreeModel::data(const QModelIndex & index, int role) const {
     };
 
     if (Qt::BackgroundRole == role) {
-        auto cur_data = i->m_itemData[0].toString();// TODO: m_itemData doesn't necessary to be a QList;
-        auto rank = (int)user_toc_jumping_history.indexOf(cur_data);
+        auto rank = (int)user_toc_jumping_history.indexOf(index);
         auto slice = 255 / (n_of_history + 5);
-        if ( rank >= 0) {
+        if (rank >= 0) {
             return QVariant(QColor(61, 174, 233, slice * rank));// Note: rank is 0-based
         };
     }
@@ -88,7 +87,7 @@ QVariant tocTreeModel::data(const QModelIndex & index, int role) const {
     return {};
 }
 
-void tocTreeModel::add_user_toc_jumping_history(const QString & data) {
+void tocTreeModel::add_user_toc_jumping_history(const QModelIndex & data) {
     // check if data already exist in history, if yes, remove it.
     user_toc_jumping_history.removeOne(data);
 
