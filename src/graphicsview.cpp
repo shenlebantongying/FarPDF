@@ -214,11 +214,13 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
     // TODO: this is buggy and only works on single page
 
 
-    if (itemAt(dragBeg_P) == itemAt(dragEnd_P) && itemAt(dragBeg_P) != nullptr && itemAt(dragEnd_P) != nullptr) {
+    if (itemAt(dragBeg_P) != nullptr && itemAt(dragEnd_P) != nullptr) {
 
         QRectF c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
-        auto it = dynamic_cast<GraphicsPageItem *>(itemAt(dragBeg_P));
+        // The rendered page is always on the bottom.
+        auto it = dynamic_cast<GraphicsPageItem *>(items(dragBeg_P).last());
+
         float y_off = m_doc->page_acc_h[it->page_num];
         auto hls = new QList<QRectF>();
 
