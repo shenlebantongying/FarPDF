@@ -1,5 +1,7 @@
 # FarPDF
 
+## [Screenshots](https://gitlab.com/slbtty/far2/-/wikis/screenshots)
+
 # Build
 
 Dependencies: `Qt6`, `C++ 20 Compiler` and `libmupdf`
