@@ -1,6 +1,7 @@
 #include "document.h"
 #include <QDebug>
 #include <iostream>
+#include <sstream>
 document::document(const std::string & path) {
     m_doc = nullptr;
     ctx = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
@@ -123,8 +124,9 @@ float document::get_page_height(int page_num) {
 int document::query_needle_at(const std::string & needle, int page_num, QList<QRectF> & hl_quads) {
 
     fz_quad hits[500];
+    int * hitnum = 0;
 
-    auto n_of_quads = fz_search_page(ctx, pages[page_num], needle.c_str(), hits, nelem(hits));
+    auto n_of_quads = fz_search_page(ctx, pages[page_num], needle.c_str(), hitnum ,hits, nelem(hits));
     for (int i = 0; i < n_of_quads; ++i) {
         hl_quads.append(fz_quad_to_QRectF(hits[i]));
     }

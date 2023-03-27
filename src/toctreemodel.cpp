@@ -162,12 +162,12 @@ void tocTreeModel::setupModelData(fz_outline * outline, toc_item * parent) {
     rec_outline = [&rec_outline](fz_outline * outline, toc_item * parent) {
         for (fz_outline * o = outline; o != nullptr; o = o->next) {
             QList<QVariant> columnData;
-            columnData << o->title;
+            columnData << QString::fromLatin1(o->title);
             auto temp_item = new toc_item(columnData, parent);
 
             // Note: inside mupdf, the page num is 0-based, this page_number will be
             // accessed as human-readable way, thus we plus 1.
-            temp_item->page_number = o->page + 1;
+            temp_item->page_number = o->page.page + 1;
 
             parent->appendChild(temp_item);
 
