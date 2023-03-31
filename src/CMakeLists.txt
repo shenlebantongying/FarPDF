@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.25)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -6,8 +6,16 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+if (LINUX)
+    message(STATUS "Build using mupdf.pc")
+    set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}")
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(PKG_mupdf REQUIRED IMPORTED_TARGET mupdf)
+else ()
+    find_package(MuPDF REQUIRED)
+endif ()
+
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(MuPDF REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -24,9 +32,12 @@ qt_add_executable(FarPDF
         ${PROJECT_SOURCES}
         )
 
-target_link_libraries(FarPDF PRIVATE
-        Qt6::Widgets
-        ${MUPDF_LIBRARIES})
+target_link_libraries(FarPDF PRIVATE Qt6::Widgets)
+if (LINUX)
+    target_link_libraries(FarPDF PRIVATE PkgConfig::PKG_mupdf)
+else ()
+    target_link_libraries(FarPDF PRIVATE ${MUPDF_LIBRARIES})
+endif ()
 
 # ALL WARNING IS ERROR FOR GCC
 target_compile_options(FarPDF PRIVATE -Wall -Wextra -Werror)

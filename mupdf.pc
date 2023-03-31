@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+Name: mupdf
+Description: The foo library
+Version: 1.0.0
+Requires: harfbuzz, freetype2, zlib, libjpeg, gumbo, jbig2dec, libopenjp2
+Cflags: -I${includedir}/mupdf -I${includedir}/mupdf/fitz
+Libs: -L${libdir} -lmupdf -lmupdf-third
