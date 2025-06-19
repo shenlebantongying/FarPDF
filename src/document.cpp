@@ -2,15 +2,18 @@
 #include <QDebug>
 #include <iostream>
 #include <sstream>
-document::document(const std::string & path) {
+document::document(const std::string& path)
+{
     m_doc = nullptr;
     ctx = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
 
-    fz_try(ctx) {
+    fz_try(ctx)
+    {
         fz_register_document_handlers(ctx);
         m_doc = fz_open_document(ctx, path.c_str());
     }
-    fz_catch(ctx) {
+    fz_catch(ctx)
+    {
         qFatal("%s", fz_caught_message(ctx));
     }
 
@@ -29,10 +32,11 @@ document::document(const std::string & path) {
     max_page_width += 50;
 }
 
-QPixmap document::get_QPixmap_from_page_number(int n, float zoom_factor) {
+QPixmap document::get_QPixmap_from_page_number(int n, float zoom_factor)
+{
 
     auto ctm = fz_scale(zoom_factor, zoom_factor);
-    fz_pixmap * pix = fz_new_pixmap_from_page(ctx, pages[n], ctm, fz_device_rgb(ctx), 0);
+    fz_pixmap* pix = fz_new_pixmap_from_page(ctx, pages[n], ctm, fz_device_rgb(ctx), 0);
 
     // Without new, the QImg will be auto destroyed when goes out of scope
     // Note: The data (pix) will not be deleted!
@@ -45,27 +49,30 @@ QPixmap document::get_QPixmap_from_page_number(int n, float zoom_factor) {
     return pixmap;
 }
 
-fz_outline * document::get_outline() {
+fz_outline* document::get_outline()
+{
     return fz_load_outline(ctx, m_doc);
 }
 
-document::~document() {
+document::~document()
+{
     // TODO: does everything recycled?
     fz_drop_document(ctx, m_doc);
     fz_drop_context(ctx);
 }
-int document::highlight_selection(int page_num, const QPointF & pointA, const QPointF & pointB, QList<QRectF> & hl_quads) {
+int document::highlight_selection(int page_num, const QPointF& pointA, const QPointF& pointB, QList<QRectF>& hl_quads)
+{
 
     auto temp_stext_page = fz_new_stext_page_from_page(ctx, pages[page_num], nullptr);
 
     fz_quad hits[500];
 
     auto n_of_quads = fz_highlight_selection(ctx,
-                                             temp_stext_page,
-                                             QPointF_to_fz_point(pointA),
-                                             QPointF_to_fz_point(pointB),
-                                             hits,
-                                             nelem(hits));
+        temp_stext_page,
+        QPointF_to_fz_point(pointA),
+        QPointF_to_fz_point(pointB),
+        hits,
+        nelem(hits));
     for (int i = 0; i < n_of_quads; ++i) {
         hl_quads.append(fz_quad_to_QRectF(hits[i]));
     }
@@ -76,26 +83,29 @@ int document::highlight_selection(int page_num, const QPointF & pointA, const QP
     return n_of_quads;
 }
 
-QString document::get_selection_text(int page_num, const QPointF & pointA, const QPointF & pointB) {
+QString document::get_selection_text(int page_num, const QPointF& pointA, const QPointF& pointB)
+{
     auto temp_stext_page = fz_new_stext_page_from_page(ctx, pages[page_num], nullptr);
     auto x = QString(fz_copy_selection(ctx, temp_stext_page, QPointF_to_fz_point(pointA), QPointF_to_fz_point(pointB), 0));
     fz_drop_stext_page(ctx, temp_stext_page);
     return x;
 }
 
-fz_point document::QPointF_to_fz_point(const QPointF & p) {
+fz_point document::QPointF_to_fz_point(const QPointF& p)
+{
     return fz_make_point((float)p.x(), (float)p.y());
 }
 
-
-QRectF document::fz_quad_to_QRectF(const fz_quad & q) {
+QRectF document::fz_quad_to_QRectF(const fz_quad& q)
+{
     QPointF tl = QPointF(q.ul.x, q.ul.y);
     QPointF br = QPointF(q.lr.x, q.lr.y);
-    //QRectF(const QPointF &topLeft, const QPointF &bottomRight)
-    return {tl, br};
+    // QRectF(const QPointF &topLeft, const QPointF &bottomRight)
+    return { tl, br };
 }
 
-std::string document::get_metadata_string() {
+std::string document::get_metadata_string()
+{
     char buf[100];
 
     std::stringstream result;
@@ -116,17 +126,19 @@ std::string document::get_metadata_string() {
     return result.str();
 }
 
-float document::get_page_height(int page_num) {
+float document::get_page_height(int page_num)
+{
     auto b = fz_bound_page(ctx, pages[page_num]);
     return b.y1 - b.y0;
 }
 
-int document::query_needle_at(const std::string & needle, int page_num, QList<QRectF> & hl_quads) {
+int document::query_needle_at(const std::string& needle, int page_num, QList<QRectF>& hl_quads)
+{
 
     fz_quad hits[500];
-    int * hitnum = 0;
+    int* hitnum = 0;
 
-    auto n_of_quads = fz_search_page(ctx, pages[page_num], needle.c_str(), hitnum ,hits, nelem(hits));
+    auto n_of_quads = fz_search_page(ctx, pages[page_num], needle.c_str(), hitnum, hits, nelem(hits));
     for (int i = 0; i < n_of_quads; ++i) {
         hl_quads.append(fz_quad_to_QRectF(hits[i]));
     }

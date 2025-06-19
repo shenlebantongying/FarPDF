@@ -6,7 +6,8 @@
 #include <QScrollBar>
 #include <QShortcut>
 
-GraphicsView::GraphicsView() {
+GraphicsView::GraphicsView()
+{
     m_doc = nullptr;
     scene = new QGraphicsScene();
 
@@ -27,47 +28,45 @@ GraphicsView::GraphicsView() {
     scene->setBackgroundBrush(Qt::lightGray);
 
     connect(this->verticalScrollBar(),
-            &QScrollBar::valueChanged,
-            [=, this] {
-                this->make_sure_pages();
-                emit page_updated();
-            });
+        &QScrollBar::valueChanged,
+        [=, this] {
+            this->make_sure_pages();
+            emit page_updated();
+        });
 
-    QClipboard * clip = QApplication::clipboard();
+    QClipboard* clip = QApplication::clipboard();
 
     auto copy = new QShortcut(QKeySequence(QKeySequence::Copy), this);
     connect(copy, &QShortcut::activated,
-            [=, this] {
-                auto c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
+        [=, this] {
+            auto c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
+            /// TODO: convert "obtain page_num by height" to a func
 
-                /// TODO: convert "obtain page_num by height" to a func
+            auto normalized_h = (float)c_rect.y() * zoom_factor;
+            auto index_it = std::find_if(m_doc->page_acc_h.begin(), m_doc->page_acc_h.end(),
+                [normalized_h](float n) {
+                    return (n > normalized_h);
+                });
 
-                auto normalized_h = (float)c_rect.y() * zoom_factor;
-                auto index_it = std::find_if(m_doc->page_acc_h.begin(), m_doc->page_acc_h.end(),
-                                             [normalized_h](float n) {
-                                                 return (n > normalized_h);
-                                             });
+            auto page_num = -1 + index_it - m_doc->page_acc_h.begin();
 
-                auto page_num = -1 + index_it - m_doc->page_acc_h.begin();
+            float y_off = m_doc->page_acc_h[page_num];
 
+            auto str = m_doc->get_selection_text((int)page_num,
+                QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off),
+                QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off));
 
-                float y_off = m_doc->page_acc_h[page_num];
-
-                auto str = m_doc->get_selection_text((int)page_num,
-                                                     QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off),
-                                                     QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off));
-
-                if (!(str.isEmpty() || str.isNull())) {
-                    clip->setText(str);
-                }
-            });
-
+            if (!(str.isEmpty() || str.isNull())) {
+                clip->setText(str);
+            }
+        });
 
     reset();
 }
 
-void GraphicsView::update_doc(document * doc_) {
+void GraphicsView::update_doc(document* doc_)
+{
     m_doc = doc_;
 
     reset();
@@ -80,7 +79,8 @@ void GraphicsView::update_doc(document * doc_) {
     make_sure_pages();
 }
 
-void GraphicsView::addPage(int n) {
+void GraphicsView::addPage(int n)
+{
     if (live_pages.size() > 10) {
         auto to_be_del = live_pages.dequeue();
         scene->removeItem(to_be_del);
@@ -88,7 +88,7 @@ void GraphicsView::addPage(int n) {
     }
 
     // Guard to avoid duplicated page rendering
-    for (auto i: live_pages) {
+    for (auto i : live_pages) {
         if (i->page_num == n) {
             return;
         }
@@ -101,15 +101,17 @@ void GraphicsView::addPage(int n) {
     live_pages.enqueue(t_pageItem);
 }
 
-QList<QGraphicsItem *> GraphicsView::get_visible_page_items() {
+QList<QGraphicsItem*> GraphicsView::get_visible_page_items()
+{
     return scene->items(mapToScene(this->viewport()->geometry()).boundingRect());
 }
 
-std::vector<int> GraphicsView::demanded_page_numbers() {
+std::vector<int> GraphicsView::demanded_page_numbers()
+{
     auto visable_rect = mapToScene(this->viewport()->geometry()).boundingRect();
 
-    qreal top = visable_rect.top();   // smaller value
-    qreal bot = visable_rect.bottom();// bigger value
+    qreal top = visable_rect.top(); // smaller value
+    qreal bot = visable_rect.bottom(); // bigger value
     int page_n_low = 0;
     int page_n_high = 0;
 
@@ -150,13 +152,15 @@ std::vector<int> GraphicsView::demanded_page_numbers() {
     return v;
 }
 
-void GraphicsView::make_sure_pages() {
-    for (auto x: demanded_page_numbers()) {
+void GraphicsView::make_sure_pages()
+{
+    for (auto x : demanded_page_numbers()) {
         addPage(x);
     }
 }
 
-int GraphicsView::get_middle_page_num() {
+int GraphicsView::get_middle_page_num()
+{
     auto height = mapToScene(this->viewport()->geometry().center()).y();
 
     for (int i = 0; i < m_doc->pageCount; ++i) {
@@ -168,7 +172,8 @@ int GraphicsView::get_middle_page_num() {
     return 0;
 }
 
-void GraphicsView::zoom_to(float factor) {
+void GraphicsView::zoom_to(float factor)
+{
     zoom_factor = factor;
 
     // auto curpage = get_middle_page_num();
@@ -181,17 +186,18 @@ void GraphicsView::zoom_to(float factor) {
     make_sure_pages();
 }
 
-void GraphicsView::jump_to_page(int user_facing_page_number /* aka 1-based page numbering*/) {
-    centerOn(0, zoom_factor * (m_doc->page_acc_h.at(user_facing_page_number - 1) +
-                               (m_doc->get_page_height(user_facing_page_number - 1)) / 2.0));
+void GraphicsView::jump_to_page(int user_facing_page_number /* aka 1-based page numbering*/)
+{
+    centerOn(0, zoom_factor * (m_doc->page_acc_h.at(user_facing_page_number - 1) + (m_doc->get_page_height(user_facing_page_number - 1)) / 2.0));
 }
 
 // -------------------------------------------------------
 //    Mouse Movement handling
 // -------------------------------------------------------
 
-void GraphicsView::mousePressEvent(QMouseEvent * event) {
-    for (auto x: select_group->childItems()) {
+void GraphicsView::mousePressEvent(QMouseEvent* event)
+{
+    for (auto x : select_group->childItems()) {
         select_group->removeFromGroup(x);
         delete x;
     }
@@ -201,7 +207,8 @@ void GraphicsView::mousePressEvent(QMouseEvent * event) {
     select_rect->setVisible(true);
 }
 
-void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
+void GraphicsView::mouseReleaseEvent(QMouseEvent* event)
+{
 
     // extra confirm that dragEnd will be captured
     if (select_rect->isVisible()) {
@@ -213,31 +220,30 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent * event) {
 
     // TODO: this is buggy and only works on single page
 
-
     if (itemAt(dragBeg_P) != nullptr && itemAt(dragEnd_P) != nullptr) {
 
         QRectF c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
         // The rendered page is always on the bottom.
-        auto it = dynamic_cast<GraphicsPageItem *>(items(dragBeg_P).last());
+        auto it = dynamic_cast<GraphicsPageItem*>(items(dragBeg_P).last());
 
         float y_off = m_doc->page_acc_h[it->page_num];
         auto hls = new QList<QRectF>();
 
-
         m_doc->highlight_selection(it->page_num,
-                                   QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off),
-                                   QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off),
-                                   *hls);
+            QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off),
+            QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off),
+            *hls);
 
-        for (auto r: *hls) {
+        for (auto r : *hls) {
             auto temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(r, it->page_num));
             select_group->addToGroup(temp_rect);
         }
     }
 }
 
-void GraphicsView::mouseMoveEvent(QMouseEvent * event) {
+void GraphicsView::mouseMoveEvent(QMouseEvent* event)
+{
     if (select_rect->isVisible()) {
         dragEnd_P = event->pos();
 
@@ -259,10 +265,10 @@ void GraphicsView::mouseMoveEvent(QMouseEvent * event) {
     }
 }
 
-void GraphicsView::reset() {
+void GraphicsView::reset()
+{
     scene->clear();
     live_pages.clear();
-
 
     // selection highlights
     select_group = new QGraphicsItemGroup();
@@ -281,7 +287,8 @@ void GraphicsView::reset() {
     scene->addItem(select_rect);
 }
 
-void GraphicsView::resizeEvent(QResizeEvent * event) {
+void GraphicsView::resizeEvent(QResizeEvent* event)
+{
     if (fit_to_width_q) {
         zoom_factor = (float)(event->size().width() / raw_page_width);
         zoom_to(zoom_factor);
@@ -291,8 +298,8 @@ void GraphicsView::resizeEvent(QResizeEvent * event) {
     setSceneRect(0, 0, raw_page_width * zoom_factor, zoom_factor * m_doc->page_acc_h.back());
 }
 
-
-void GraphicsView::add_search_rect_at_page(QRectF rect, int page_num) {
+void GraphicsView::add_search_rect_at_page(QRectF rect, int page_num)
+{
     auto temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(rect, page_num));
     temp_rect->setBrush(QColor::fromRgb(0, 170, 255, 150));
 
@@ -303,16 +310,18 @@ void GraphicsView::add_search_rect_at_page(QRectF rect, int page_num) {
     search_group->addToGroup(temp_rect);
 }
 
-void GraphicsView::clear_search_rect() {
-    for (auto x: search_group->childItems()) {
+void GraphicsView::clear_search_rect()
+{
+    for (auto x : search_group->childItems()) {
         search_group->removeFromGroup(x);
         delete x;
     }
 }
 
-QRectF GraphicsView::zoomify_rect_to_page(const QRectF & rect, int page_num) {
-    return {zoom_factor * rect.x(),
-            zoom_factor * (rect.y() + m_doc->page_acc_h[page_num]),
-            zoom_factor * rect.width(),
-            zoom_factor * rect.height()};
+QRectF GraphicsView::zoomify_rect_to_page(const QRectF& rect, int page_num)
+{
+    return { zoom_factor * rect.x(),
+        zoom_factor * (rect.y() + m_doc->page_acc_h[page_num]),
+        zoom_factor * rect.width(),
+        zoom_factor * rect.height() };
 }

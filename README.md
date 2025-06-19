@@ -1,26 +1,14 @@
 # FarPDF
 
-## [Screenshots](https://gitlab.com/slbtty/far2/-/wikis/screenshots)
+[Screenshots](https://gitlab.com/slbtty/far2/-/wikis/screenshots)
 
-# Build
+# Tech
 
-Dependencies: `Qt6`, `C++ 20 Compiler` and `libmupdf`
+Dependencies: `Qt6` & `libmupdf`
 
-```bash
-cmake -S . -B build \
-      --install-prefix=/usr/local \
-      -G Ninja \
-      -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel 6
+Format
 
-# The binary will end up in `build/src/FarPDF`.
-
-cmake --install build
-
-# The binary will installed to /usr/local and
-#   an app launcher will be installed to yor desktop's launcher
+```sh
+meson format -i -r
+ninja -C buildDir clang-format
 ```
-
-<a href="https://repology.org/project/farpdf/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/farpdf.svg" alt="Packaging status" align="right">
-</a>

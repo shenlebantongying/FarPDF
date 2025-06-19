@@ -14,30 +14,29 @@
 class farMainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    explicit farMainWindow(QWidget * parent = nullptr);
+    explicit farMainWindow(QWidget* parent = nullptr);
 
-    void load_document_from_path(const QString & filename);
+    void load_document_from_path(const QString& filename);
 
 signals:
 
 private:
-    document * m_doc;
-    GraphicsView * view;
+    document* m_doc;
+    GraphicsView* view;
 
     QList<float> zoom_leveler;
-    QComboBox * zoom_switcher;
+    QComboBox* zoom_switcher;
 
-    QDockWidget * toc_dock;
-    tocTreeModel * toc;
-    QTreeView * tocView;
+    QDockWidget* toc_dock;
+    tocTreeModel* toc;
+    QTreeView* tocView;
 
-    QToolBar * toolbar;
+    QToolBar* toolbar;
 
     void jump_to_page(int n);
 
     void load_document();
     void show_metadata_dialog();
-
 
     /**
      * @brief Change view's zooming factor
@@ -49,4 +48,4 @@ private:
     void zoom_down();
 };
 
-#endif// FARMAINWINDOW_H
+#endif // FARMAINWINDOW_H
