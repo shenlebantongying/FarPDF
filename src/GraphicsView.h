@@ -13,8 +13,8 @@ public:
     QGraphicsScene* scene;
     void update_doc(Document* doc_);
 
-    bool fit_to_width_q;
-    qreal raw_page_width;
+    bool fit_to_width_q = false;
+    qreal raw_page_width = 0;
 
     int get_middle_page_num();
     void jump_to_page(int user_facing_page_number);
@@ -30,15 +30,15 @@ public slots:
     void zoom_to(float factor);
 
 private:
-    Document* m_doc;
-    float zoom_factor;
+    Document* m_doc = nullptr;
+    float zoom_factor = 1;
 
-    QGraphicsPolygonItem* select_rect;
+    QGraphicsPolygonItem* select_rect = nullptr;
     QPoint dragBeg_P;
     QPoint dragEnd_P;
 
-    QGraphicsItemGroup* select_group;
-    QGraphicsItemGroup* search_group;
+    QGraphicsItemGroup* select_group = nullptr;
+    QGraphicsItemGroup* search_group = nullptr;
 
     void addPage(int n);
 

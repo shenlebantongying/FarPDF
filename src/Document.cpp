@@ -1,15 +1,15 @@
 #include "Document.h"
-
 #include <QDebug>
 #include <iostream>
+#include <mupdf/classes2.h>
 #include <sstream>
+using namespace mupdf;
 
 Document::Document(const std::string& path) :
     m_doc(new FzDocument(path.c_str()))
 {
 
     pageCount = m_doc->fz_count_pages();
-    max_page_width = 0;
     page_acc_h.push_back(0);
     for (int i = 0; i < pageCount; ++i) {
         pages.emplace_back(m_doc->fz_load_page(i));
@@ -115,10 +115,12 @@ float Document::get_page_height(int page_num)
 int Document::query_needle_at(const std::string& needle, int page_num, QList<QRectF>& hl_quads)
 {
 
-    FzQuad hits[500];
-    int* hitnum = 0;
+    std::vector<FzQuad> hits;
+    hits.resize(500);
 
-    auto n_of_quads = pages[page_num].fz_search_page(needle.c_str(), hitnum, *hits, nelem(hits));
+    int* hitnum = nullptr;
+
+    auto n_of_quads = pages[page_num].fz_search_page(needle.c_str(), hitnum, *hits.data(), hits.size());
     for (int i = 0; i < n_of_quads; ++i) {
         hl_quads.append(fz_quad_to_QRectF(hits[i]));
     }

@@ -5,3 +5,4 @@ BreakConstructorInitializers: AfterColon
 PackConstructorInitializers: Never
 AllowShortFunctionsOnASingleLine: None
 SortIncludes: CaseSensitive
+AllowShortLambdasOnASingleLine: None

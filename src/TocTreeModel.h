@@ -10,8 +10,6 @@ class TocItem {
 public:
     explicit TocItem(const QList<QVariant>& data, TocItem* parentItem = nullptr);
 
-    ~TocItem();
-
     void appendChild(TocItem* item);
 
     TocItem* child(int row);
@@ -38,7 +36,6 @@ class TocTreeModel : public QAbstractItemModel {
     Q_OBJECT
 public:
     explicit TocTreeModel(fz_outline* outline, QObject* parent = nullptr);
-    ~TocTreeModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
 
@@ -67,5 +64,5 @@ private:
 
     QQueue<QModelIndex> user_toc_jumping_history;
 
-    TocItem* rootItem;
+    TocItem* rootItem = nullptr;
 };

@@ -4,10 +4,7 @@
 #include <QPixmap>
 #include <QRectF>
 #include <mupdf/classes.h>
-#include <mupdf/classes2.h>
 #include <string>
-
-using namespace mupdf;
 
 /**
  * @brief Bridging mupdf and Qt/C++ : All bits that related to mupdf belong to here! \n
@@ -17,15 +14,14 @@ class Document {
 
 public:
     explicit Document(const std::string& path);
-    ~Document() = default;
     QPixmap get_QPixmap_from_page_number(int n, float zoom_factor);
 
-    FzDocument* m_doc;
+    mupdf::FzDocument* m_doc;
 
     fz_outline* get_outline();
 
     // Note: without render, this consumes very little memory
-    std::vector<FzPage> pages;
+    std::vector<mupdf::FzPage> pages;
 
     // internally we always store page number as 0-indexed.
     // We only do the +1 when present them in UI.
@@ -62,8 +58,8 @@ public:
 
 private:
     // Utils
-    static std::unique_ptr<FzPoint> QPointF_to_fz_point(const QPointF& p);
-    static QRectF fz_quad_to_QRectF(const FzQuad& q);
+    static std::unique_ptr<mupdf::FzPoint> QPointF_to_fz_point(const QPointF& p);
+    static QRectF fz_quad_to_QRectF(const mupdf::FzQuad& q);
 };
 
 #endif // DOC_H

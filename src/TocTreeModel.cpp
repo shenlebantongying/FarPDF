@@ -51,8 +51,6 @@ int TocItem::row() const
     return 0;
 }
 
-TocItem::~TocItem() = default;
-
 constexpr int n_of_history = 7;
 
 TocTreeModel::TocTreeModel(fz_outline* outline, QObject* parent) :
@@ -73,8 +71,9 @@ void TocTreeModel::update_outline(fz_outline* outline)
 
 int TocTreeModel::columnCount(const QModelIndex& parent) const
 {
-    if (parent.isValid())
+    if (parent.isValid()) {
         return static_cast<TocItem*>(parent.internalPointer())->columnCount();
+    }
     return rootItem->columnCount();
 }
 
@@ -127,8 +126,9 @@ int TocTreeModel::page_num_from_index(const QModelIndex& index)
 
 Qt::ItemFlags TocTreeModel::flags(const QModelIndex& index) const
 {
-    if (!index.isValid())
+    if (!index.isValid()) {
         return Qt::NoItemFlags;
+    }
     return QAbstractItemModel::flags(index);
 }
 
@@ -140,15 +140,17 @@ QModelIndex TocTreeModel::index(int row, int column, const QModelIndex& parent) 
 
     TocItem* parentItem = nullptr;
 
-    if (!parent.isValid())
+    if (!parent.isValid()) {
         parentItem = rootItem;
-    else
+    } else {
         parentItem = static_cast<TocItem*>(parent.internalPointer());
+    }
 
     TocItem* childItem = parentItem->child(row);
 
-    if (childItem)
+    if (childItem != nullptr) {
         return createIndex(row, column, childItem);
+    }
     return {};
 }
 
@@ -191,7 +193,7 @@ void TocTreeModel::setupModelData(fz_outline* outline, TocItem* parent)
         for (fz_outline* o = outline; o != nullptr; o = o->next) {
             QList<QVariant> columnData;
             columnData << QString::fromLatin1(o->title);
-            auto temp_item = new TocItem(columnData, parent);
+            auto* temp_item = new TocItem(columnData, parent);
 
             // Note: inside mupdf, the page num is 0-based, this page_number will be
             // accessed as human-readable way, thus we plus 1.
@@ -207,5 +209,3 @@ void TocTreeModel::setupModelData(fz_outline* outline, TocItem* parent)
 
     rec_outline(outline, parent);
 }
-
-TocTreeModel::~TocTreeModel() = default;

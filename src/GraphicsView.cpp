@@ -5,49 +5,46 @@
 #include <QMouseEvent>
 #include <QScrollBar>
 #include <QShortcut>
+#include <algorithm>
 
-GraphicsView::GraphicsView()
+GraphicsView::GraphicsView() :
+    scene(new QGraphicsScene(this))
 {
-    m_doc = nullptr;
-    scene = new QGraphicsScene();
 
-    // This enable mouse selection
     setMouseTracking(true);
 
-    zoom_factor = 1;
-
     setScene(scene);
-
-    fit_to_width_q = false;
 
     // The middle point of 1st page's boundary is (0,0)
     setAlignment(Qt::AlignTop | Qt::AlignHCenter);
 
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
-    scene->setBackgroundBrush(Qt::lightGray);
+    scene->setBackgroundBrush(QBrush(Qt::lightGray));
 
-    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, [=, this] {
+    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, [this] {
         this->make_sure_pages();
         emit page_updated();
     });
 
     QClipboard* clip = QApplication::clipboard();
 
-    auto copy = new QShortcut(QKeySequence(QKeySequence::Copy), this);
-    connect(copy, &QShortcut::activated, [=, this] {
+    auto* copy = new QShortcut(QKeySequence(QKeySequence::Copy), this);
+    connect(copy, &QShortcut::activated, [clip, this] {
         auto c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
         /// TODO: convert "obtain page_num by height" to a func
 
         auto normalized_h = (float)c_rect.y() * zoom_factor;
-        auto index_it = std::find_if(m_doc->page_acc_h.begin(), m_doc->page_acc_h.end(), [normalized_h](float n) { return (n > normalized_h); });
+        auto index_it = std::find_if(m_doc->page_acc_h.begin(), m_doc->page_acc_h.end(), [normalized_h](float n) {
+            return (n > normalized_h);
+        });
 
         auto page_num = -1 + index_it - m_doc->page_acc_h.begin();
 
         float y_off = m_doc->page_acc_h[page_num];
 
-        auto str = m_doc->get_selection_text((int)page_num, QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off));
+        auto str = m_doc->get_selection_text((int)page_num, QPointF(c_rect.topLeft().x() / zoom_factor, (c_rect.topLeft().y() / zoom_factor) - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off));
 
         if (!(str.isEmpty() || str.isNull())) {
             clip->setText(str);
@@ -74,19 +71,19 @@ void GraphicsView::update_doc(Document* doc_)
 void GraphicsView::addPage(int n)
 {
     if (live_pages.size() > 10) {
-        auto to_be_del = live_pages.dequeue();
+        auto* to_be_del = live_pages.dequeue();
         scene->removeItem(to_be_del);
         delete to_be_del;
     }
 
     // Guard to avoid duplicated page rendering
-    for (auto i : live_pages) {
+    for (auto* i : std::as_const(live_pages)) {
         if (i->page_num == n) {
             return;
         }
     }
 
-    auto t_pageItem = new GraphicsPageItem(m_doc->get_QPixmap_from_page_number(n, zoom_factor), n, nullptr);
+    auto* t_pageItem = new GraphicsPageItem(m_doc->get_QPixmap_from_page_number(n, zoom_factor), n, nullptr);
     t_pageItem->setOffset(0, m_doc->page_acc_h[n] * zoom_factor);
 
     scene->addItem(t_pageItem);
@@ -108,7 +105,7 @@ std::vector<int> GraphicsView::demanded_page_numbers()
     int page_n_high = 0;
 
     // from head to end, find the first that bigger than top
-    for (auto i = 0u; i < m_doc->page_acc_h.size(); ++i) {
+    for (auto i = 0U; i < m_doc->page_acc_h.size(); ++i) {
         if (top <= zoom_factor * m_doc->page_acc_h[i]) {
             page_n_low = (int)i - 1;
             break;
@@ -129,13 +126,9 @@ std::vector<int> GraphicsView::demanded_page_numbers()
         page_n_low -= 1;
     }
 
-    if (page_n_high > m_doc->pageCount) {
-        page_n_high = m_doc->pageCount;
-    }
+    page_n_high = std::min(page_n_high, m_doc->pageCount);
 
-    if (page_n_low < 0) {
-        page_n_low = 0;
-    }
+    page_n_low = std::max(page_n_low, 0);
 
     //
 
@@ -189,7 +182,7 @@ void GraphicsView::jump_to_page(int user_facing_page_number /* aka 1-based page 
 
 void GraphicsView::mousePressEvent(QMouseEvent* event)
 {
-    for (auto x : select_group->childItems()) {
+    for (auto* x : select_group->childItems()) {
         select_group->removeFromGroup(x);
         delete x;
     }
@@ -217,15 +210,15 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent* event)
         QRectF c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
         // The rendered page is always on the bottom.
-        auto it = dynamic_cast<GraphicsPageItem*>(items(dragBeg_P).last());
+        auto* it = dynamic_cast<GraphicsPageItem*>(items(dragBeg_P).last());
 
         float y_off = m_doc->page_acc_h[it->page_num];
-        auto hls = new QList<QRectF>();
+        auto* hls = new QList<QRectF>();
 
-        m_doc->highlight_selection(it->page_num, QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off), *hls);
+        m_doc->highlight_selection(it->page_num, QPointF(c_rect.topLeft().x() / zoom_factor, (c_rect.topLeft().y() / zoom_factor) - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, (c_rect.bottomRight().y() / zoom_factor) - y_off), *hls);
 
         for (auto r : *hls) {
-            auto temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(r, it->page_num));
+            auto* temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(r, it->page_num));
             select_group->addToGroup(temp_rect);
         }
     }
@@ -289,7 +282,7 @@ void GraphicsView::resizeEvent(QResizeEvent* event)
 
 void GraphicsView::add_search_rect_at_page(QRectF rect, int page_num)
 {
-    auto temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(rect, page_num));
+    auto* temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(rect, page_num));
     temp_rect->setBrush(QColor::fromRgb(0, 170, 255, 150));
 
     auto nopen = QPen();
@@ -301,7 +294,7 @@ void GraphicsView::add_search_rect_at_page(QRectF rect, int page_num)
 
 void GraphicsView::clear_search_rect()
 {
-    for (auto x : search_group->childItems()) {
+    for (auto& x : search_group->childItems()) {
         search_group->removeFromGroup(x);
         delete x;
     }

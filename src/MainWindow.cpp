@@ -16,22 +16,19 @@
 #include <QWidgetAction>
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent)
+    QMainWindow(parent),
+    m_doc(nullptr),
+    view(new GraphicsView()),
+    zoom_switcher(new QComboBox(this)),
+    tocView(new QTreeView(this)),
+    toolbar(new QToolBar(this))
 {
 
-    // init code should not be related to specific doc,
-    // set it to null to make sure the program will crash if some wrong code ever added;
-    m_doc = nullptr;
-
     resize(1024, 800);
-
-    view = new GraphicsView();
 
     //-- Table of contents -----------------------------------------------------------
 
     toc_dock = new QDockWidget("Table of Contents", this);
-    tocView = new QTreeView();
-    toc = nullptr;
 
     // Note: we will take the dock to a standalone one later
     addDockWidget(Qt::LeftDockWidgetArea, toc_dock);
@@ -47,7 +44,6 @@ MainWindow::MainWindow(QWidget* parent) :
 
     //-- Main Toolbar -----------------------------------------------------------------
 
-    toolbar = new QToolBar();
     toolbar->setMovable(false);
     toolbar->setFloatable(false);
     toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -59,22 +55,28 @@ MainWindow::MainWindow(QWidget* parent) :
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
 
-    connect(openAct, &QAction::triggered, [=, this] { load_document(); });
+    connect(openAct, &QAction::triggered, [this] {
+        load_document();
+    });
 
     // MetaData Dialog
     auto* infoAct = new QAction(QIcon::fromTheme("documentinfo"), tr("&Open..."), this);
 
-    connect(infoAct, &QAction::triggered, [=, this] { show_metadata_dialog(); });
+    connect(infoAct, &QAction::triggered, [this] {
+        show_metadata_dialog();
+    });
 
     // Page Indicator
-    auto page_indicator = new QLabel("0", this);
+    auto* page_indicator = new QLabel("0", this);
     page_indicator->setMinimumWidth(20);
     page_indicator->setAlignment(Qt::AlignCenter);
 
-    connect(view, &GraphicsView::page_updated, [=, this] { page_indicator->setText(QString::number(view->get_middle_page_num()) + "/" + QString::number(m_doc->pageCount) + " "); });
+    connect(view, &GraphicsView::page_updated, [page_indicator, this] {
+        page_indicator->setText(QString::number(view->get_middle_page_num()) + "/" + QString::number(m_doc->pageCount) + " ");
+    });
 
     // Zoom switcher
-    zoom_switcher = new QComboBox();
+
     zoom_leveler = { 3.0, 2.75, 2.50, 2.25, 2.0, 1.75, 1.50, 1.40, 1.30, 1.20, 1.10, 1.0, 0.9, 0.75, 0.5 };
     for (auto x : zoom_leveler) {
         zoom_switcher->addItem(QString::number(x * 100) + "%", x);
@@ -84,7 +86,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     zoom_switcher->setCurrentText("100%");
 
-    connect(zoom_switcher, &QComboBox::currentIndexChanged, [=, this] {
+    connect(zoom_switcher, &QComboBox::currentIndexChanged, [this] {
         const std::string t_float("float");
         if (zoom_switcher->currentData().typeName() == t_float) {
             if (m_doc != nullptr) {
@@ -98,68 +100,76 @@ MainWindow::MainWindow(QWidget* parent) :
         };
     });
 
-    auto zoom_up = new QShortcut(QKeySequence(QKeySequence::ZoomOut), this);
-    auto zoom_down = new QShortcut(QKeySequence(QKeySequence::ZoomIn), this);
+    auto* zoom_up = new QShortcut(QKeySequence(QKeySequence::ZoomOut), this);
+    auto* zoom_down = new QShortcut(QKeySequence(QKeySequence::ZoomIn), this);
 
-    connect(zoom_up, &QShortcut::activated, [=, this] { this->zoom_up(); });
-    connect(zoom_down, &QShortcut::activated, [=, this] { this->zoom_down(); });
+    connect(zoom_up, &QShortcut::activated, [this] {
+        this->zoom_up();
+    });
+    connect(zoom_down, &QShortcut::activated, [this] {
+        this->zoom_down();
+    });
 
     // Search Popup
     // TODO: CLEAN THE SHIT BLOW
 
-    auto search_menu = new PopupMenu(nullptr, this);
+    auto* search_menu = new PopupMenu(nullptr, this);
     search_menu->setWindowModality(Qt::NonModal);
 
-    auto search_popup = new QWidgetAction(this);
+    auto* search_popup = new QWidgetAction(this);
 
-    auto term_inputer = new QLineEdit(this);
+    auto* term_inputer = new QLineEdit(this);
     term_inputer->setFocusPolicy(Qt::StrongFocus);
 
-    auto foreward_btn = new QPushButton(this);
-    auto backward_btn = new QPushButton(this);
-    auto clear_btn = new QPushButton(this);
+    auto* foreward_btn = new QPushButton(this);
+    auto* backward_btn = new QPushButton(this);
+    auto* clear_btn = new QPushButton(this);
 
     foreward_btn->setIcon(QIcon::fromTheme("arrow-down"));
     backward_btn->setIcon(QIcon::fromTheme("arrow-up"));
     clear_btn->setIcon(QIcon::fromTheme("edit-clear-all"));
 
-    auto search_layout = new QHBoxLayout();
+    auto* search_layout = new QHBoxLayout();
     search_layout->addWidget(foreward_btn);
     search_layout->addWidget(backward_btn);
     search_layout->addWidget(term_inputer);
     search_layout->addWidget(clear_btn);
 
-    auto wrap_widget = new QWidget(this);
+    auto* wrap_widget = new QWidget(this);
     wrap_widget->setLayout(search_layout);
 
     search_popup->setDefaultWidget(wrap_widget);
 
     search_menu->addAction(search_popup);
 
-    auto search_btn = new QToolButton();
+    auto* search_btn = new QToolButton();
 
     search_btn->setIcon(QIcon::fromTheme("search"));
     search_btn->setMenu(search_menu);
     search_btn->setPopupMode(QToolButton::InstantPopup);
 
-    connect(search_menu, &QMenu::aboutToShow, [=, this] { term_inputer->setFocus(); });
+    connect(search_menu, &QMenu::aboutToShow, [term_inputer, this] {
+        term_inputer->setFocus();
+    });
 
     // Search related connections
 
-    connect(term_inputer, &QLineEdit::editingFinished, [=, this] {
-        auto lol = new QList<QRectF>();
+    connect(term_inputer, &QLineEdit::editingFinished, [term_inputer, this] {
+        auto* lol = new QList<QRectF>();
         if (m_doc != nullptr) {
-            m_doc->query_needle_at(term_inputer->text().toStdString(), view->get_middle_page_num() - 1, *lol);
+            m_doc->query_needle_at(term_inputer->text().toStdString(), std::max(0, view->get_middle_page_num() - 1), *lol);
             for (auto y : *lol) {
-                view->add_search_rect_at_page(y, view->get_middle_page_num() - 1);
+                view->add_search_rect_at_page(y, std::max(0, view->get_middle_page_num() - 1));
             }
         }
     });
 
-    connect(clear_btn, &QPushButton::clicked, [=, this] { view->clear_search_rect(); });
+    connect(clear_btn, &QPushButton::clicked, [this] {
+        view->clear_search_rect();
+    });
 
-    connect(foreward_btn, &QPushButton::clicked, [=, this] {
-        auto lol = new QList<QRectF>();
+    connect(foreward_btn, &QPushButton::clicked, [term_inputer, this] {
+        auto* lol = new QList<QRectF>();
 
         for (int i = view->get_middle_page_num(); i < m_doc->pageCount; ++i) {
             if (0 < (m_doc->query_needle_at(term_inputer->text().toStdString(), i, *lol))) {
@@ -172,8 +182,8 @@ MainWindow::MainWindow(QWidget* parent) :
         }
     });
 
-    connect(backward_btn, &QPushButton::clicked, [=, this] {
-        auto lol = new QList<QRectF>();
+    connect(backward_btn, &QPushButton::clicked, [term_inputer, this] {
+        auto* lol = new QList<QRectF>();
 
         for (int i = view->get_middle_page_num() - 2; i > 0; --i) {
             if (0 < (m_doc->query_needle_at(term_inputer->text().toStdString(), i, *lol))) {
@@ -190,7 +200,7 @@ MainWindow::MainWindow(QWidget* parent) :
     toolbar->addAction(openAct);
     toolbar->addAction(infoAct);
 
-    auto blank_splitter = new QWidget(this);
+    auto* blank_splitter = new QWidget(this);
     blank_splitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     toolbar->addWidget(blank_splitter);
 
@@ -260,7 +270,7 @@ void MainWindow::load_document_from_path(const QString& file_name)
 
     connect(tocView->selectionModel(), &QItemSelectionModel::currentChanged,
         // TODO: side effect -> open a doc will always end up in the 1st bookmark
-        [=, this](const QModelIndex& current, const QModelIndex& /*previous*/) {
+        [this](const QModelIndex& current, const QModelIndex& /*previous*/) {
             jump_to_page(TocTreeModel::page_num_from_index(current));
             toc->add_user_toc_jumping_history(current);
             emit toc->layoutChanged();
@@ -269,9 +279,9 @@ void MainWindow::load_document_from_path(const QString& file_name)
 
 void MainWindow::show_metadata_dialog()
 {
-    if (m_doc) {
+    if (m_doc != nullptr) {
         // Note: Qt::Tool + parent set properly = always on top of the parent.
-        auto metaDialog = new QLabel(this);
+        auto* metaDialog = new QLabel(this);
         metaDialog->setWindowFlags(Qt::Tool);
 
         metaDialog->setTextInteractionFlags(Qt::TextSelectableByMouse);

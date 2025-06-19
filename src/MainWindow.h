@@ -26,7 +26,7 @@ private:
     QComboBox* zoom_switcher;
 
     QDockWidget* toc_dock;
-    TocTreeModel* toc;
+    TocTreeModel* toc = nullptr;
     QTreeView* tocView;
 
     QToolBar* toolbar;

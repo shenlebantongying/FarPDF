@@ -10,7 +10,7 @@ void PopupMenu::showEvent(QShowEvent* event)
 {
     auto cur = this->pos();
 
-    move(cur.x() - this->width() / 2, cur.y());
+    move(cur.x() - (this->width() / 2), cur.y());
 
     QWidget::showEvent(event);
 }
