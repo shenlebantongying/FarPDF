@@ -1,3 +1,7 @@
 BasedOnStyle: WebKit
-ColumnLimit: 0
+ColumnLimit: 512
 InsertNewlineAtEOF: true
+BreakConstructorInitializers: AfterColon
+PackConstructorInitializers: Never
+AllowShortFunctionsOnASingleLine: None
+SortIncludes: CaseSensitive

@@ -1,9 +1,8 @@
-#ifndef POPUPMENU_H
-#define POPUPMENU_H
+#pragma once
 
 #include <QMenu>
 
-class popupMenu : public QMenu {
+class PopupMenu : public QMenu {
     Q_OBJECT
 public:
     /**
@@ -11,11 +10,9 @@ public:
      * @param calling_widget This is preserved when someday i want the popup more fancy
      * @param parent
      */
-    explicit popupMenu(QWidget* calling_widget, QWidget* parent = nullptr);
+    explicit PopupMenu(QWidget* calling_widget, QWidget* parent = nullptr);
     void showEvent(QShowEvent* event) override;
 
 private:
     QWidget* calling_widget;
 };
-
-#endif // POPUPMENU_H

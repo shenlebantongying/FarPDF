@@ -1,38 +1,37 @@
 #ifndef DOC_H
 #define DOC_H
 
-#include <mupdf/fitz.h>
-
-// Qt related
-#include <QList>
 #include <QPixmap>
 #include <QRectF>
-
-// Extra
+#include <mupdf/classes.h>
+#include <mupdf/classes2.h>
 #include <string>
+
+using namespace mupdf;
 
 /**
  * @brief Bridging mupdf and Qt/C++ : All bits that related to mupdf belong to here! \n
  * Note: mupdf uses reference counting for memory management.
  */
-class document {
+class Document {
+
 public:
-    explicit document(const std::string& path);
-    ~document();
+    explicit Document(const std::string& path);
+    ~Document() = default;
     QPixmap get_QPixmap_from_page_number(int n, float zoom_factor);
 
-    fz_document* m_doc;
+    FzDocument* m_doc;
 
     fz_outline* get_outline();
 
     // Note: without render, this consumes very little memory
-    std::vector<fz_page*> pages;
+    std::vector<FzPage> pages;
 
     // internally we always store page number as 0-indexed.
     // We only do the +1 when present them in UI.
     int pageCount;
 
-    float max_page_width;
+    float max_page_width = 0;
 
     // Accumulated page heights
     std::vector<float> page_acc_h;
@@ -62,11 +61,9 @@ public:
     int query_needle_at(const std::string& needle, int page_num, QList<QRectF>& hl_quads);
 
 private:
-    fz_context* ctx;
-
     // Utils
-    static fz_point QPointF_to_fz_point(const QPointF& p);
-    static QRectF fz_quad_to_QRectF(const fz_quad& q);
+    static std::unique_ptr<FzPoint> QPointF_to_fz_point(const QPointF& p);
+    static QRectF fz_quad_to_QRectF(const FzQuad& q);
 };
 
 #endif // DOC_H

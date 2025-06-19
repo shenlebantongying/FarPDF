@@ -1,34 +1,32 @@
-#ifndef FARMAINWINDOW_H
-#define FARMAINWINDOW_H
+#pragma once
 
+#include "Document.h"
+#include "GraphicsView.h"
+#include "TocTreeModel.h"
 #include <QComboBox>
 #include <QDockWidget>
 #include <QMainWindow>
 #include <QToolBar>
 #include <QTreeView>
 
-#include "document.h"
-#include "graphicsview.h"
-#include "toctreemodel.h"
-
-class farMainWindow : public QMainWindow {
+class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    explicit farMainWindow(QWidget* parent = nullptr);
+    explicit MainWindow(QWidget* parent = nullptr);
 
     void load_document_from_path(const QString& filename);
 
 signals:
 
 private:
-    document* m_doc;
+    Document* m_doc;
     GraphicsView* view;
 
     QList<float> zoom_leveler;
     QComboBox* zoom_switcher;
 
     QDockWidget* toc_dock;
-    tocTreeModel* toc;
+    TocTreeModel* toc;
     QTreeView* tocView;
 
     QToolBar* toolbar;
@@ -47,5 +45,3 @@ private:
     void zoom_up();
     void zoom_down();
 };
-
-#endif // FARMAINWINDOW_H

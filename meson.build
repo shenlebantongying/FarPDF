@@ -1,26 +1,40 @@
 project(
     'FarPDF',
-    'cpp',
+    ['cpp'],
     version: '1.0.0',
-    default_options: ['warning_level=3', 'cpp_std=c++20'],
+    default_options: ['warning_level=3', 'cpp_std=gnu++23'],
 )
 
 cc = meson.get_compiler('cpp')
 
-mupdf_dep = cc.find_library(
+# Destructors of mupdfcpp is not useable...
+add_project_arguments('-DNDEBUG', language: 'cpp')
+
+deps = []
+
+deps += cc.find_library(
     'mupdf',
     has_headers: ['mupdf/fitz/version.h', 'mupdf/fitz.h', 'mupdf/pdf.h'],
     required: true,
 )
 
-qt6 = import('qt6')
-qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'Widgets'])
+dep_mupdfcpp = cc.find_library(
+    'mupdfcpp',
+    has_headers: ['mupdf/fitz/version.h', 'mupdf/fitz.h', 'mupdf/pdf.h'],
+    required: true,
+)
 
-deps = [mupdf_dep, qt6_dep]
+
+
+deps += dep_mupdfcpp
+
+
+qt6 = import('qt6')
+deps += dependency('qt6', modules: ['Core', 'Gui', 'Widgets'])
 
 subdir('src')
 
-far_moc_files = qt6.compile_moc(headers: far_moc_sources, dependencies: qt6_dep)
+far_moc_files = qt6.compile_moc(headers: far_moc_sources, dependencies: deps)
 farpdf = executable(
     'farpdf',
     far_sources,

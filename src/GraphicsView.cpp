@@ -1,4 +1,4 @@
-#include "graphicsview.h"
+#include "GraphicsView.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QGraphicsPixmapItem>
@@ -27,45 +27,37 @@ GraphicsView::GraphicsView()
 
     scene->setBackgroundBrush(Qt::lightGray);
 
-    connect(this->verticalScrollBar(),
-        &QScrollBar::valueChanged,
-        [=, this] {
-            this->make_sure_pages();
-            emit page_updated();
-        });
+    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, [=, this] {
+        this->make_sure_pages();
+        emit page_updated();
+    });
 
     QClipboard* clip = QApplication::clipboard();
 
     auto copy = new QShortcut(QKeySequence(QKeySequence::Copy), this);
-    connect(copy, &QShortcut::activated,
-        [=, this] {
-            auto c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
+    connect(copy, &QShortcut::activated, [=, this] {
+        auto c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
-            /// TODO: convert "obtain page_num by height" to a func
+        /// TODO: convert "obtain page_num by height" to a func
 
-            auto normalized_h = (float)c_rect.y() * zoom_factor;
-            auto index_it = std::find_if(m_doc->page_acc_h.begin(), m_doc->page_acc_h.end(),
-                [normalized_h](float n) {
-                    return (n > normalized_h);
-                });
+        auto normalized_h = (float)c_rect.y() * zoom_factor;
+        auto index_it = std::find_if(m_doc->page_acc_h.begin(), m_doc->page_acc_h.end(), [normalized_h](float n) { return (n > normalized_h); });
 
-            auto page_num = -1 + index_it - m_doc->page_acc_h.begin();
+        auto page_num = -1 + index_it - m_doc->page_acc_h.begin();
 
-            float y_off = m_doc->page_acc_h[page_num];
+        float y_off = m_doc->page_acc_h[page_num];
 
-            auto str = m_doc->get_selection_text((int)page_num,
-                QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off),
-                QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off));
+        auto str = m_doc->get_selection_text((int)page_num, QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off));
 
-            if (!(str.isEmpty() || str.isNull())) {
-                clip->setText(str);
-            }
-        });
+        if (!(str.isEmpty() || str.isNull())) {
+            clip->setText(str);
+        }
+    });
 
     reset();
 }
 
-void GraphicsView::update_doc(document* doc_)
+void GraphicsView::update_doc(Document* doc_)
 {
     m_doc = doc_;
 
@@ -230,10 +222,7 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent* event)
         float y_off = m_doc->page_acc_h[it->page_num];
         auto hls = new QList<QRectF>();
 
-        m_doc->highlight_selection(it->page_num,
-            QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off),
-            QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off),
-            *hls);
+        m_doc->highlight_selection(it->page_num, QPointF(c_rect.topLeft().x() / zoom_factor, c_rect.topLeft().y() / zoom_factor - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off), *hls);
 
         for (auto r : *hls) {
             auto temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(r, it->page_num));
@@ -320,8 +309,5 @@ void GraphicsView::clear_search_rect()
 
 QRectF GraphicsView::zoomify_rect_to_page(const QRectF& rect, int page_num)
 {
-    return { zoom_factor * rect.x(),
-        zoom_factor * (rect.y() + m_doc->page_acc_h[page_num]),
-        zoom_factor * rect.width(),
-        zoom_factor * rect.height() };
+    return { zoom_factor * rect.x(), zoom_factor * (rect.y() + m_doc->page_acc_h[page_num]), zoom_factor * rect.width(), zoom_factor * rect.height() };
 }

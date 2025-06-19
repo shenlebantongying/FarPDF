@@ -1,45 +1,44 @@
-#ifndef TOCTREEMODEL_H
-#define TOCTREEMODEL_H
+#pragma once
 
 #include <QAbstractItemModel>
 #include <QQueue>
 #include <mupdf/fitz/outline.h>
 
-class toc_item {
-    friend class tocTreeModel;
+class TocItem {
+    friend class TocTreeModel;
 
 public:
-    explicit toc_item(const QList<QVariant>& data, toc_item* parentItem = nullptr);
+    explicit TocItem(const QList<QVariant>& data, TocItem* parentItem = nullptr);
 
-    ~toc_item();
+    ~TocItem();
 
-    void appendChild(toc_item* item);
+    void appendChild(TocItem* item);
 
-    toc_item* child(int row);
+    TocItem* child(int row);
 
-    int childCount() const;
+    qsizetype childCount() const;
 
-    int columnCount() const;
+    qsizetype columnCount() const;
 
     QVariant data(int column) const;
 
     int row() const;
 
-    int page_number;
+    int page_number = 0;
 
-    toc_item* parentItem();
+    TocItem* parentItem();
 
 private:
-    QList<toc_item*> m_childItems;
+    QList<TocItem*> m_childItems;
     QList<QVariant> m_itemData;
-    toc_item* m_parent_item;
+    TocItem* m_parent_item;
 };
 
-class tocTreeModel : public QAbstractItemModel {
+class TocTreeModel : public QAbstractItemModel {
     Q_OBJECT
 public:
-    explicit tocTreeModel(fz_outline* outline, QObject* parent = nullptr);
-    ~tocTreeModel() override;
+    explicit TocTreeModel(fz_outline* outline, QObject* parent = nullptr);
+    ~TocTreeModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
 
@@ -64,11 +63,9 @@ public:
     void add_user_toc_jumping_history(const QModelIndex& data);
 
 private:
-    static void setupModelData(fz_outline* outline, toc_item* parent);
+    static void setupModelData(fz_outline* outline, TocItem* parent);
 
     QQueue<QModelIndex> user_toc_jumping_history;
 
-    toc_item* rootItem;
+    TocItem* rootItem;
 };
-
-#endif // TOCTREEMODEL_H

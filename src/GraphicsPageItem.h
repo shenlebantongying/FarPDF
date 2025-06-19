@@ -1,5 +1,4 @@
-#ifndef GRAPHICSPAGEITEM_H
-#define GRAPHICSPAGEITEM_H
+#pragma once
 
 #include <QGraphicsPixmapItem>
 
@@ -10,5 +9,3 @@ public:
     GraphicsPageItem(const QPixmap& pixmap, int page_number, QGraphicsItem* parent);
     int page_num;
 };
-
-#endif // GRAPHICSPAGEITEM_H

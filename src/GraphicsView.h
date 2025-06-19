@@ -1,11 +1,9 @@
-#ifndef GRAPHICSVIEW_H
-#define GRAPHICSVIEW_H
+#pragma once
 
+#include "Document.h"
+#include "GraphicsPageItem.h"
 #include <QGraphicsView>
 #include <QQueue>
-
-#include "document.h"
-#include "graphicspageitem.h"
 
 class GraphicsView : public QGraphicsView {
     Q_OBJECT
@@ -13,7 +11,7 @@ class GraphicsView : public QGraphicsView {
 public:
     GraphicsView();
     QGraphicsScene* scene;
-    void update_doc(document* doc_);
+    void update_doc(Document* doc_);
 
     bool fit_to_width_q;
     qreal raw_page_width;
@@ -32,7 +30,7 @@ public slots:
     void zoom_to(float factor);
 
 private:
-    document* m_doc;
+    Document* m_doc;
     float zoom_factor;
 
     QGraphicsPolygonItem* select_rect;
@@ -73,5 +71,3 @@ private:
      */
     QRectF zoomify_rect_to_page(const QRectF& rect, int page_num);
 };
-
-#endif // GRAPHICSVIEW_H
