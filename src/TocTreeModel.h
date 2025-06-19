@@ -2,6 +2,7 @@
 
 #include <QAbstractItemModel>
 #include <QQueue>
+#include <mupdf/classes.h>
 #include <mupdf/fitz/outline.h>
 
 class TocItem {
@@ -35,7 +36,7 @@ private:
 class TocTreeModel : public QAbstractItemModel {
     Q_OBJECT
 public:
-    explicit TocTreeModel(fz_outline* outline, QObject* parent = nullptr);
+    explicit TocTreeModel(mupdf::FzOutline outline, QObject* parent = nullptr);
 
     QVariant data(const QModelIndex& index, int role) const override;
 
@@ -51,7 +52,7 @@ public:
 
     static int page_num_from_index(const QModelIndex& index);
 
-    void update_outline(fz_outline* outline);
+    void update_outline(mupdf::FzOutline outline);
 
     /**
      * @brief Add a toc title to user_toc_jumping_history which will later used to decide row color;
@@ -60,7 +61,7 @@ public:
     void add_user_toc_jumping_history(const QModelIndex& data);
 
 private:
-    static void setupModelData(fz_outline* outline, TocItem* parent);
+    static void setupModelData(mupdf::FzOutline outline, TocItem* parent);
 
     QQueue<QModelIndex> user_toc_jumping_history;
 

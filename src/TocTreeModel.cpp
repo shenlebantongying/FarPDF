@@ -1,5 +1,7 @@
 #include "TocTreeModel.h"
 #include <QColor>
+#include <mupdf/classes.h>
+using namespace mupdf;
 
 TocItem::TocItem(const QList<QVariant>& data, TocItem* parentItem) :
     m_itemData(data),
@@ -53,7 +55,7 @@ int TocItem::row() const
 
 constexpr int n_of_history = 7;
 
-TocTreeModel::TocTreeModel(fz_outline* outline, QObject* parent) :
+TocTreeModel::TocTreeModel(FzOutline outline, QObject* parent) :
     QAbstractItemModel(parent)
 {
     update_outline(outline);
@@ -61,7 +63,7 @@ TocTreeModel::TocTreeModel(fz_outline* outline, QObject* parent) :
     user_toc_jumping_history.fill(QModelIndex(), n_of_history);
 }
 
-void TocTreeModel::update_outline(fz_outline* outline)
+void TocTreeModel::update_outline(FzOutline outline)
 {
     beginResetModel();
     rootItem = new TocItem({ "Titles" });
@@ -184,25 +186,28 @@ int TocTreeModel::rowCount(const QModelIndex& parent) const
     return parentItem->childCount();
 }
 
-void TocTreeModel::setupModelData(fz_outline* outline, TocItem* parent)
+void TocTreeModel::setupModelData(mupdf::FzOutline outline, TocItem* parent)
 {
-    // Use a named lambda to recursively read the fz_outline structure
 
-    std::function<void(fz_outline*, TocItem*)> rec_outline;
-    rec_outline = [&rec_outline](fz_outline* outline, TocItem* parent) {
-        for (fz_outline* o = outline; o != nullptr; o = o->next) {
+    // In some PDF files, there might be senescence byte sequences; we need this for getting rid of the gibberish text;
+    auto toUtf16 = QStringDecoder(QStringDecoder::Utf8, QStringConverter::Flag::ConvertInvalidToNull);
+
+    std::function<void(FzOutline, TocItem*)> rec_outline;
+    rec_outline = [&rec_outline, &toUtf16](const FzOutline& outline, TocItem* parent) {
+        for (mupdf::FzOutline o = outline; o; o = o.next()) {
             QList<QVariant> columnData;
-            columnData << QString::fromLatin1(o->title);
+            QString t = toUtf16(o.title());
+            columnData << t;
             auto* temp_item = new TocItem(columnData, parent);
 
             // Note: inside mupdf, the page num is 0-based, this page_number will be
             // accessed as human-readable way, thus we plus 1.
-            temp_item->page_number = o->page.page + 1;
+            temp_item->page_number = o.page().page + 1;
 
             parent->appendChild(temp_item);
 
-            if (o->down != nullptr) {
-                rec_outline(o->down, temp_item);
+            if (o.down()) {
+                rec_outline(o.down(), temp_item);
             }
         }
     };

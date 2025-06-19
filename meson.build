@@ -8,7 +8,11 @@ project(
 cc = meson.get_compiler('cpp')
 
 # Destructors of mupdfcpp is not useable...
-add_project_arguments('-DNDEBUG', language: 'cpp')
+add_project_arguments(
+    '-DNDEBUG',
+    '-DQT_ENABLE_STRICT_MODE_UP_TO=0x070000',
+    language: 'cpp',
+)
 
 deps = []
 
@@ -20,14 +24,11 @@ deps += cc.find_library(
 
 dep_mupdfcpp = cc.find_library(
     'mupdfcpp',
-    has_headers: ['mupdf/fitz/version.h', 'mupdf/fitz.h', 'mupdf/pdf.h'],
+    has_headers: ['mupdf/classes.h'],
     required: true,
 )
 
-
-
 deps += dep_mupdfcpp
-
 
 qt6 = import('qt6')
 deps += dependency('qt6', modules: ['Core', 'Gui', 'Widgets'])

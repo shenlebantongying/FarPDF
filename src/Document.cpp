@@ -38,9 +38,9 @@ QPixmap Document::get_QPixmap_from_page_number(int n, float zoom_factor)
     return pixmap;
 }
 
-fz_outline* Document::get_outline()
+FzOutline Document::get_outline()
 {
-    return m_doc->fz_load_outline().m_internal;
+    return m_doc->fz_load_outline();
 }
 
 int Document::highlight_selection(int page_num, const QPointF& pointA, const QPointF& pointB, QList<QRectF>& hl_quads)

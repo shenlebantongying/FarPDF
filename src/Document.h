@@ -18,7 +18,7 @@ public:
 
     mupdf::FzDocument* m_doc;
 
-    fz_outline* get_outline();
+    mupdf::FzOutline get_outline();
 
     // Note: without render, this consumes very little memory
     std::vector<mupdf::FzPage> pages;

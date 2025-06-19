@@ -22,15 +22,15 @@ GraphicsView::GraphicsView() :
 
     scene->setBackgroundBrush(QBrush(Qt::lightGray));
 
-    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, [this] {
+    connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, [this] {
         this->make_sure_pages();
-        emit page_updated();
+        page_updated();
     });
 
     QClipboard* clip = QApplication::clipboard();
 
     auto* copy = new QShortcut(QKeySequence(QKeySequence::Copy), this);
-    connect(copy, &QShortcut::activated, [clip, this] {
+    connect(copy, &QShortcut::activated, this, [clip, this] {
         auto c_rect = mapToScene(QRect(dragBeg_P, dragEnd_P)).boundingRect();
 
         /// TODO: convert "obtain page_num by height" to a func
@@ -44,7 +44,7 @@ GraphicsView::GraphicsView() :
 
         float y_off = m_doc->page_acc_h[page_num];
 
-        auto str = m_doc->get_selection_text((int)page_num, QPointF(c_rect.topLeft().x() / zoom_factor, (c_rect.topLeft().y() / zoom_factor) - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, c_rect.bottomRight().y() / zoom_factor - y_off));
+        auto str = m_doc->get_selection_text((int)page_num, QPointF(c_rect.topLeft().x() / zoom_factor, (c_rect.topLeft().y() / zoom_factor) - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, (c_rect.bottomRight().y() / zoom_factor) - y_off));
 
         if (!(str.isEmpty() || str.isNull())) {
             clip->setText(str);
@@ -217,7 +217,7 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent* event)
 
         m_doc->highlight_selection(it->page_num, QPointF(c_rect.topLeft().x() / zoom_factor, (c_rect.topLeft().y() / zoom_factor) - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, (c_rect.bottomRight().y() / zoom_factor) - y_off), *hls);
 
-        for (auto r : *hls) {
+        for (auto r : std::as_const(*hls)) {
             auto* temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(r, it->page_num));
             select_group->addToGroup(temp_rect);
         }
