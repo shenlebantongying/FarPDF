@@ -16,14 +16,26 @@ add_project_arguments(
 
 deps = []
 
+if target_machine.system() == 'darwin'
+    mupdf_inc = include_directories('/opt/homebrew/include')
+    mupdf_dirs = ['/opt/homebrew/lib']
+else
+    mupdf_inc = include_directories()
+    mupdf_dirs = []
+endif
+
 deps += cc.find_library(
     'mupdf',
+    dirs: mupdf_dirs,
+    header_include_directories: [mupdf_inc],
     has_headers: ['mupdf/fitz/version.h', 'mupdf/fitz.h', 'mupdf/pdf.h'],
     required: true,
 )
 
 dep_mupdfcpp = cc.find_library(
     'mupdfcpp',
+    dirs: mupdf_dirs,
+    header_include_directories: [mupdf_inc],
     has_headers: ['mupdf/classes.h'],
     required: true,
 )

@@ -17,7 +17,7 @@ public:
     QPixmap get_QPixmap_from_page_number(int n, float zoom_factor);
 
     mupdf::FzDocument* m_doc;
-
+    int devicePixelRatio = 1;
     mupdf::FzOutline get_outline();
 
     // Note: without render, this consumes very little memory

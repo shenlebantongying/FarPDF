@@ -12,14 +12,11 @@ GraphicsView::GraphicsView() :
 {
 
     setMouseTracking(true);
-
     setScene(scene);
 
     // The middle point of 1st page's boundary is (0,0)
     setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-
-    setResizeAnchor(QGraphicsView::AnchorViewCenter);
-
+    setResizeAnchor(AnchorViewCenter);
     scene->setBackgroundBrush(QBrush(Qt::lightGray));
 
     connect(this->verticalScrollBar(), &QScrollBar::valueChanged, this, [this] {
@@ -35,7 +32,7 @@ GraphicsView::GraphicsView() :
 
         /// TODO: convert "obtain page_num by height" to a func
 
-        auto normalized_h = (float)c_rect.y() * zoom_factor;
+        auto normalized_h = (float)c_rect.y();
         auto index_it = std::find_if(m_doc->page_acc_h.begin(), m_doc->page_acc_h.end(), [normalized_h](float n) {
             return (n > normalized_h);
         });
@@ -63,14 +60,14 @@ void GraphicsView::update_doc(Document* doc_)
     // TODO: temporal hack, just get first page's width and consider it the whole doc.
     addPage(0);
     raw_page_width = scene->itemsBoundingRect().width();
-    this->setSceneRect(0, 0, zoom_factor * raw_page_width, zoom_factor * m_doc->page_acc_h.back());
+    this->setSceneRect(0, 0, raw_page_width, m_doc->page_acc_h.back());
 
     make_sure_pages();
 }
 
 void GraphicsView::addPage(int n)
 {
-    if (live_pages.size() > 10) {
+    if (live_pages.size() > 5) {
         auto* to_be_del = live_pages.dequeue();
         scene->removeItem(to_be_del);
         delete to_be_del;
@@ -84,7 +81,7 @@ void GraphicsView::addPage(int n)
     }
 
     auto* t_pageItem = new GraphicsPageItem(m_doc->get_QPixmap_from_page_number(n, zoom_factor), n, nullptr);
-    t_pageItem->setOffset(0, m_doc->page_acc_h[n] * zoom_factor);
+    t_pageItem->setOffset(0, m_doc->page_acc_h[n]);
 
     scene->addItem(t_pageItem);
     live_pages.enqueue(t_pageItem);
@@ -106,14 +103,14 @@ std::vector<int> GraphicsView::demanded_page_numbers()
 
     // from head to end, find the first that bigger than top
     for (auto i = 0U; i < m_doc->page_acc_h.size(); ++i) {
-        if (top <= zoom_factor * m_doc->page_acc_h[i]) {
+        if (top <= m_doc->page_acc_h[i]) {
             page_n_low = (int)i - 1;
             break;
         }
     }
 
     for (auto i = m_doc->page_acc_h.size() - 1; i > 0; --i) {
-        if (bot > zoom_factor * m_doc->page_acc_h[i]) {
+        if (bot > m_doc->page_acc_h[i]) {
             page_n_high = (int)i + 1;
             break;
         }
@@ -163,17 +160,19 @@ void GraphicsView::zoom_to(float factor)
 
     // auto curpage = get_middle_page_num();
 
+    setTransform(QTransform::fromScale(zoom_factor, zoom_factor));
+
     reset();
 
     addPage(0);
 
-    this->setSceneRect(0, 0, zoom_factor * scene->itemsBoundingRect().width(), zoom_factor * m_doc->page_acc_h.back());
+    this->setSceneRect(0, 0, scene->itemsBoundingRect().width(), m_doc->page_acc_h.back());
     make_sure_pages();
 }
 
 void GraphicsView::jump_to_page(int user_facing_page_number /* aka 1-based page numbering*/)
 {
-    centerOn(0, zoom_factor * (m_doc->page_acc_h.at(user_facing_page_number - 1) + (m_doc->get_page_height(user_facing_page_number - 1)) / 2.0));
+    centerOn(0, (m_doc->page_acc_h.at(user_facing_page_number - 1) + ((m_doc->get_page_height(user_facing_page_number - 1)) / 2.0)));
 }
 
 // -------------------------------------------------------
@@ -215,7 +214,7 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent* event)
         float y_off = m_doc->page_acc_h[it->page_num];
         auto* hls = new QList<QRectF>();
 
-        m_doc->highlight_selection(it->page_num, QPointF(c_rect.topLeft().x() / zoom_factor, (c_rect.topLeft().y() / zoom_factor) - y_off), QPointF(c_rect.bottomRight().x() / zoom_factor, (c_rect.bottomRight().y() / zoom_factor) - y_off), *hls);
+        m_doc->highlight_selection(it->page_num, QPointF(c_rect.topLeft().x(), (c_rect.topLeft().y()) - y_off), QPointF(c_rect.bottomRight().x(), (c_rect.bottomRight().y()) - y_off), *hls);
 
         for (auto r : std::as_const(*hls)) {
             auto* temp_rect = new QGraphicsRectItem(zoomify_rect_to_page(r, it->page_num));
@@ -277,7 +276,7 @@ void GraphicsView::resizeEvent(QResizeEvent* event)
     }
 
     // Note: werid hack, to make sure pages are always horizontally centered after zooming or window width change
-    setSceneRect(0, 0, raw_page_width * zoom_factor, zoom_factor * m_doc->page_acc_h.back());
+    setSceneRect(0, 0, raw_page_width, m_doc->page_acc_h.back());
 }
 
 void GraphicsView::add_search_rect_at_page(QRectF rect, int page_num)
@@ -302,5 +301,5 @@ void GraphicsView::clear_search_rect()
 
 QRectF GraphicsView::zoomify_rect_to_page(const QRectF& rect, int page_num)
 {
-    return { zoom_factor * rect.x(), zoom_factor * (rect.y() + m_doc->page_acc_h[page_num]), zoom_factor * rect.width(), zoom_factor * rect.height() };
+    return { rect.x(), (rect.y() + m_doc->page_acc_h[page_num]), rect.width(), rect.height() };
 }

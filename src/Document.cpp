@@ -1,4 +1,5 @@
 #include "Document.h"
+#include <QApplication>
 #include <QDebug>
 #include <iostream>
 #include <mupdf/classes2.h>
@@ -8,8 +9,8 @@ using namespace mupdf;
 Document::Document(const std::string& path) :
     m_doc(new FzDocument(path.c_str()))
 {
-
     pageCount = m_doc->fz_count_pages();
+    devicePixelRatio = qApp->devicePixelRatio();
     page_acc_h.push_back(0);
     for (int i = 0; i < pageCount; ++i) {
         pages.emplace_back(m_doc->fz_load_page(i));
@@ -25,16 +26,16 @@ Document::Document(const std::string& path) :
 
 QPixmap Document::get_QPixmap_from_page_number(int n, float zoom_factor)
 {
-
+    zoom_factor = zoom_factor * devicePixelRatio;
     FzMatrix ctm = mupdf::fz_scale(zoom_factor, zoom_factor);
 
     FzPixmap pix = pages[n].fz_new_pixmap_from_page(ctm, FzColorspace(FzColorspace::Fixed_RGB), 0);
 
-    // Without new, the QImg will be auto destroyed when goes out of scope
-    // Note: The data (pix) will not be deleted!
     QImage Parsed_Qimg(pix.samples(), pix.w(), pix.h(), pix.stride(), QImage::Format_RGB888);
-    auto pixmap = QPixmap::fromImage(Parsed_Qimg);
+    QPixmap pixmap = QPixmap::fromImage(Parsed_Qimg);
 
+    // TODO: the performance implication of this??
+    pixmap.setDevicePixelRatio(zoom_factor);
     return pixmap;
 }
 

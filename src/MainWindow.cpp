@@ -47,11 +47,16 @@ MainWindow::MainWindow(QWidget* parent) :
     toolbar->setMovable(false);
     toolbar->setFloatable(false);
     toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+
+#if defined(Q_OS_MACOS)
+    this->setUnifiedTitleAndToolBarOnMac(true);
+#endif
+
     this->addToolBar(toolbar);
 
     // Open button
     const QIcon openIcon = QIcon::fromTheme("document-open");
-    auto* openAct = new QAction(openIcon, tr("&Open..."), this);
+    auto* openAct = new QAction(openIcon, tr("Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
 
@@ -60,7 +65,7 @@ MainWindow::MainWindow(QWidget* parent) :
     });
 
     // MetaData Dialog
-    auto* infoAct = new QAction(QIcon::fromTheme("documentinfo"), tr("&Open..."), this);
+    auto* infoAct = new QAction(QIcon::fromTheme("documentinfo"), tr("Info..."), this);
 
     connect(infoAct, &QAction::triggered, this, [this] {
         show_metadata_dialog();
